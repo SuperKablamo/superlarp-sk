@@ -1,0 +1,30 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:og="http://ogp.me/ns#"
+      xmlns:fb="http://www.facebook.com/2008/fbml">
+
+  <head>
+  	<title></title>
+  	<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  	<link rel="stylesheet" type="text/css" href="/static/css/styles.css" />
+  </head> 
+  <body>
+  <div id="container">
+    <div id="header">
+			<ul>
+				<li><a href="/admin/cast">Cast</a></li>
+				<li><a href="/admin/race">Race</a></li>	
+				<li><a href="/admin/weapon">Weapon</a></li>	
+				<li><a href="/admin/armor">Armor</a></li>	
+				<li><a href="/admin/power">Power</a></li>				
+			</ul>	
+    </div><!-- /header -->
+    <div id="content"> 
+		{% block content %}
+		{% endblock %}
+		</div><!-- /content -->
+	 	<div id="footer">
+		</div><!-- /footer -->
+	</div><!-- /container -->
+  </body>
+</html>
