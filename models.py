@@ -1,44 +1,64 @@
-# Datastore
+#
+# Copyright 2010 SuperKablamo, LLC
+# info@superkablamo.com
+#
+
 import logging
-from google.appengine.ext import db
+
+from django.utils import simplejson
 from google.appengine.ext import blobstore
+from google.appengine.ext import db
+from google.appengine.ext.db import polymodel
+
+############################# CUSTOM PROPERTIES ##############################
+##############################################################################   
+class JSONProperty(db.TextProperty):
+    def validate(self, value):
+        return value
+ 
+    def get_value_for_datastore(self, model_instance):
+        result = super(JSONProperty, self).get_value_for_datastore(model_instance)
+        result = simplejson.dumps(result)
+        return db.Text(result)
+	 
+    def make_value_from_datastore(self, value):
+        try:
+            value = simplejson.loads(str(value))
+        except:
+            pass
+
+        return super(JSONProperty, self).make_value_from_datastore(value)
+
+############################# DATASTORE MODELS ###############################
+##############################################################################
 
 class UserPrefs(db.Model): # user.user_id() s is key_name
     created = db.DateTimeProperty(auto_now_add=True)
     updated = db.DateTimeProperty(auto_now=True)
 
 ################# CHARACTERS #################################################
-class Character(db.PolyModel):
+class Character(polymodel.PolyModel):
     created = db.DateTimeProperty(auto_now_add=True)
     updated = db.DateTimeProperty(auto_now=True)    
     name = db.StringProperty(required=True)
-    level = db.IntegeryPropery(required=True, default=1)
+    level = db.IntegerProperty(required=True, default=1)
     race = db.StringProperty(required=True)
     alignment = db.StringProperty(required=True)
     size = db.StringProperty(required=True)
-    experience = db.IntegerProperty(required=True)
-    strength = db.IntegerProperty(required=True)
-    constitution = db.IntegerProperty(required=True)
-    dexterity = db.IntegerProperty(required=True)
-    intelligence = db.IntegerProperty(required=True)
-    wisdom = db.IntegerProperty(required=True)
-    charisma = db.IntegerProperty(required=True)
+    experience = db.IntegerProperty(required=True, default=0)
     hit_points = db.IntegerProperty(required=True)
-    armor = db.IntegerProperty(required=True)
-    fortitude = db.IntegerProperty(required=True)
-    reflex = db.IntegerProperty(required=True)
-    will = db.IntegerProperty(required=True)
     speed = db.IntegerProperty(required=True)
-    perception = db.IntegerProperty(required=True)
+    scores = JSONProperty(required=True)
     powers = db.ListProperty(db.Key, required=True, default=None)
     items = db.ListProperty(db.Key, required=True, default=None)
+    equipped = db.ListProperty(db.Key, required=True, default=None)
         
-class PC(Character):
+class PlayerCharacter(Character):
     cast = db.StringProperty(required=True)
     height = db.IntegerProperty(required=True)
     weight = db.IntegerProperty(required=True)
     
-class NPC(Character):    
+class NonPlayerCharacter(Character):    
     origin = db.StringProperty(required=True)
     category = db.StringProperty(required=True)
     keywords = db.StringListProperty(required=True, default=None)    
@@ -67,8 +87,25 @@ class Skills(db.Model):
     streetwise = db.IntegerProperty(required=True)
     thievery = db.IntegerProperty(required=True)
 
+########### BONUSES ##########################################################
+class Bonus(polymodel.PolyModel):
+    bonus = db.IntegerProperty(required=True, default=1) # Positive modifier   
+        
+class AbilityBonus(Bonus):
+    ability = db.StringProperty(required=True) # Applies to an Ability
+
+class DefenseBonus(Bonus):
+    ability = db.StringProperty(required=True) # Applies to an Defense
+
+class ResistenceBonus(Bonus):
+    damage_keyword = db.StringProperty(required=True) # Applies to a Damage
+
+class SkillBonus(Bonus):
+    skill = db.StringProperty(required=True)            
+##############################################################################
+
 ############### POWERS #######################################################
-class Power(db.PolyModel):
+class Power(polymodel.PolyModel):
     created = db.DateTimeProperty(auto_now_add=True)
     updated = db.DateTimeProperty(auto_now=True)    
     name = db.StringProperty(required=True)
@@ -100,7 +137,7 @@ class Heal(Power):
 ##############################################################################
     
 ############### ITEMS ########################################################    
-class Item(db.PolyModel):
+class Item(polymodel.PolyModel):
     created = db.DateTimeProperty(auto_now_add=True)
     updated = db.DateTimeProperty(auto_now=True)    
     name = db.StringProperty(required=True)
@@ -119,7 +156,7 @@ class Weapon(Item):
     damage_die = db.IntegerProperty(required=True) # Type of die to roll
     dice = db.IntegerProperty(required=True) # Number of dice to roll
     group = db.StringListProperty(required=True)
-    properties = db.StringListProperty(required=True)
+    attributes = db.StringListProperty(required=True)
     short_range = db.IntegerProperty(required=True, default=0)
     long_range = db.IntegerProperty(required=True, default=0)
     
@@ -135,23 +172,6 @@ class Gear(Item):
     ability_bonus = db.ReferenceProperty(AbilityBonus, required=True)    
 ##############################################################################          
 
-########### BONUSES ##########################################################
-class Bonus(db.PolyModel):
-    bonus = db.IntegerProperty(required=True, default=1) # Positive modifier   
-        
-class AbilityBonus(Bonus):
-    ability = db.StringProperty(required=True) # Applies to an Ability
-
-class DefenseBonus(Bonus):
-    ability = db.StringProperty(required=True) # Applies to an Defense
-
-class ResistenceBonus(Bonus):
-    damage_keyword = db.StringProperty(required=True) # Applies to a Damage
-
-class SkillBonus(Bonus):
-    skill = db.StringProperty(required=True)            
-##############################################################################
-
 class Guild(db.Model):
     created = db.DateTimeProperty(auto_now_add=True)
     updated = db.DateTimeProperty(auto_now=True)   
@@ -161,16 +181,14 @@ class Guild(db.Model):
     motto = db.StringProperty(required=False)
     description = db.TextProperty(required=False)
     members = db.ListProperty(db.Key, required=True, default=None)
-    bonuses = db.ListProperty(Bonus, required=True, default=None)
+    bonuses = JSONProperty(required=True)
     experience = db.IntegerProperty(required=True, default=0)
     alignment = db.StringProperty(required=True)
     
 class Cast(db.Model):
     name = db.StringProperty(required=True)
-    description = db.TextProperty(required=True)    
-    defense_bonuses = db.ListProperty(db.Key, required=True, default=None)
-    skill_bonuses = db.ListProperty(db.Key, required=True, default=None)
-    resistence_bonuses = db.ListProperty(db.Key, required=True, default=None)
+    motto = db.StringProperty(required=True)    
+    bonuses = JSONProperty(required=True)
     hit_point_base = db.IntegerProperty(required=True) 
     hit_point_level = db.IntegerProperty(required=True)
     base_skill = db.StringProperty(required=True)
@@ -178,10 +196,8 @@ class Cast(db.Model):
     
 class Race(db.Model):
     name = db.StringProperty(required=True)
-    description = db.TextProperty(required=True)
-    ability_bonuses = db.ListProperty(db.Key, required=True, default=None)
-    skill_bonuses = db.ListProperty(db.Key, required=True, default=None)
-    resistence_bonuses = db.ListProperty(db.Key, required=True, default=None)    
+    motto = db.StringProperty(required=True)
+    bonuses = JSONProperty(required=True)  
     size = db.StringProperty(required=True)
     speed = db.IntegerProperty(required=True)
     min_height = db.IntegerProperty(required=True)
@@ -189,18 +205,6 @@ class Race(db.Model):
     min_weight = db.IntegerProperty(required=True)
     max_weight = db.IntegerProperty(required=True)
     languages = db.StringListProperty(required=True, default=None)    
-    
-class Build(db.Model):
-    pc = db.ReferenceProperty(PC, required=True)
-    head = db.ReferenceProperty(Item, required=False)
-    arm = db.ReferenceProperty(Item, required=False)
-    left_hand = db.ReferenceProperty(Item, required=False)
-    right_hand = db.ReferenceProperty(Item, required=False)
-    leg = db.ReferenceProperty(Item, required=False)
-    feet = db.ReferenceProperty(Item, required=False)
-    waist = db.ReferenceProperty(Item, required=False)
-    neck = db.ReferenceProperty(Item, required=False)
-    rings = db.ListProperty(db.Key, required=True, default=None)     
 
 class Treasure(db.Model):
     level = db.IntegerProperty(required=True, default=1) # Level requirement           

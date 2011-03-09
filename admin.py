@@ -40,14 +40,16 @@ class InitAdmin(webapp.RequestHandler):
         }
         generate(self, 'admin_init.html', template_values)        
 
-def post(self, method):
-    logging.info('################## InitAdmin:: post() ####################')
-    if method == "races": 
-        r = seed.seedRaces()
-    elif method == "casts": 
-        r = seed.seedCasts()
-    else: r = API404
-    return self.response.out.write(simplejson.dumps(r))
+    def post(self, method):
+        logging.info('################## InitAdmin:: post() ####################')
+        if method == "races": 
+            r = seed.seedRaces()
+        elif method == "casts": 
+            r = seed.seedCasts()
+        elif method == "bonuses": 
+            r = seed.seedBonuses()            
+        #else: r = API404
+        #return self.response.out.write(simplejson.dumps(r))
 
 
 class CastAdmin(webapp.RequestHandler):
@@ -100,6 +102,7 @@ def generate(self, template_name, template_values):
 ##############################################################################
 application = webapp.WSGIApplication([('/admin/', Admin),
                                       ('/admin/init', InitAdmin),
+                                      (r'/admin/init/(.*)', InitAdmin),
                                       ('/admin/cast', CastAdmin),
                                       ('/admin/race', RaceAdmin),
                                       ('/admin/armor', ArmorAdmin),
