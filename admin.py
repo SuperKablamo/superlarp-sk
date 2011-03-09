@@ -3,12 +3,20 @@
 # info@superkablamo.com
 #
 
-############################# IMPORTS ########################################
+############################# SK IMPORTS #####################################
 ############################################################################## 
-import os
+import rules
+import seed
 
 from settings import *
 
+############################# GAE IMPORTS ####################################
+##############################################################################
+import os
+import logging
+import urllib2
+
+from django.utils import simplejson
 from google.appengine.api import users
 from google.appengine.ext import db
 from google.appengine.ext import webapp
@@ -24,6 +32,23 @@ class Admin(webapp.RequestHandler):
             'text': 'Hello World'
         }
         generate(self, 'admin.html', template_values)        
+
+class InitAdmin(webapp.RequestHandler):
+    def get(self):
+        template_values = {
+            'text': 'Hello World'
+        }
+        generate(self, 'admin_init.html', template_values)        
+
+def post(self, method):
+    logging.info('################## InitAdmin:: post() ####################')
+    if method == "races": 
+        r = seed.seedRaces()
+    elif method == "casts": 
+        r = seed.seedCasts()
+    else: r = API404
+    return self.response.out.write(simplejson.dumps(r))
+
 
 class CastAdmin(webapp.RequestHandler):
     def get(self):
@@ -74,6 +99,7 @@ def generate(self, template_name, template_values):
 ##############################################################################
 ##############################################################################
 application = webapp.WSGIApplication([('/admin/', Admin),
+                                      ('/admin/init', InitAdmin),
                                       ('/admin/cast', CastAdmin),
                                       ('/admin/race', RaceAdmin),
                                       ('/admin/armor', ArmorAdmin),

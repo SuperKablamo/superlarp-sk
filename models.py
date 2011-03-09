@@ -142,8 +142,11 @@ class Bonus(db.PolyModel):
 class AbilityBonus(Bonus):
     ability = db.StringProperty(required=True) # Applies to an Ability
 
+class DefenseBonus(Bonus):
+    ability = db.StringProperty(required=True) # Applies to an Defense
+
 class ResistenceBonus(Bonus):
-    damage_keyword = db.StringProperty(required=True) # Applies to a Defense
+    damage_keyword = db.StringProperty(required=True) # Applies to a Damage
 
 class SkillBonus(Bonus):
     skill = db.StringProperty(required=True)            
@@ -165,10 +168,11 @@ class Guild(db.Model):
 class Cast(db.Model):
     name = db.StringProperty(required=True)
     description = db.TextProperty(required=True)    
-    ability_bonuses = db.ListProperty(db.Key, required=True, default=None)
+    defense_bonuses = db.ListProperty(db.Key, required=True, default=None)
     skill_bonuses = db.ListProperty(db.Key, required=True, default=None)
     resistence_bonuses = db.ListProperty(db.Key, required=True, default=None)
     hit_point_base = db.IntegerProperty(required=True) 
+    hit_point_level = db.IntegerProperty(required=True)
     base_skill = db.StringProperty(required=True)
     skills = db.StringListProperty(required=True, default=None)
     

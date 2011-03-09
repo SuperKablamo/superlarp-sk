@@ -1,0 +1,14 @@
+{% extends "admin.html" %}
+
+{% block content %}
+<div>
+	<form method="post" action="/admin/init/races">
+		<label>Seed Races</label>
+		<input type="submit" value="Seed" />
+	</form>	<br/><br/>
+	<form method="post" action="/admin/init/casts">
+		<label>Seed Casts</label>
+		<input type="submit" value="Seed" />
+	</form>
+</div>	
+{% endblock %}
