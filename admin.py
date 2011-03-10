@@ -85,7 +85,14 @@ class PowerAdmin(webapp.RequestHandler):
         template_values = {
             'text': 'Hello World'
         }
-        generate(self, 'admin_power.html', template_values)                        
+        generate(self, 'admin_power.html', template_values)   
+
+class CharacterAdmin(webapp.RequestHandler):
+    def get(self):
+        template_values = {
+            'text': 'Hello World'
+        }
+        generate(self, 'admin_character.html', template_values)                             
         
 ######################## METHODS #############################################
 ##############################################################################
@@ -107,7 +114,8 @@ application = webapp.WSGIApplication([('/admin/', Admin),
                                       ('/admin/race', RaceAdmin),
                                       ('/admin/armor', ArmorAdmin),
                                       ('/admin/weapon', WeaponAdmin),
-                                      ('/admin/power', PowerAdmin)],
+                                      ('/admin/power', PowerAdmin),
+                                      ('/admin/character', CharacterAdmin)],
                                        debug=True)
 
 def main():

@@ -6,6 +6,7 @@
 ############################# SK IMPORTS #####################################
 ############################################################################## 
 import models
+import utils
 
 from settings import *
 
@@ -48,38 +49,61 @@ class APIError(webapp.RequestHandler):
 ######################## METHODS #############################################
 ##############################################################################
 def createPlayer(self):
-    
-    
-    player = models.Player(name=self.request.get('name'),
-                           level=1,
-                           race=self.request.get('race'),
-                           cast=self.request.get('cast'),
-                           alignment=self.request.get('alignment'),
-                           strength
+    """Creates a new Player Character and returns that character as a JSON
+    Response.
+    """
+    logging.info('###################### createPlayer() ####################')    
+    # Build the basic data format for scores and fill base values ...
+    abilities = buildScores(self, models.ABILITIES_KEY, models.ABILITY_KEYS)
+    skills = buildScores(self, models.SKILLS_KEY, models.SKILL_KEYS)
+    defenses = buildScores(self, models.DEFENSES_KEY, models.DEFENSE_KEYS)
+    scores = {'abilities': abilities, 'skills': skills, 'defenses': defenses}
 
-"""
-class Character(polymodel.PolyModel):
-    created = db.DateTimeProperty(auto_now_add=True)
-    updated = db.DateTimeProperty(auto_now=True)    
-    name = db.StringProperty(required=True)
-    level = db.IntegerProperty(required=True, default=1)
-    race = db.StringProperty(required=True)
-    alignment = db.StringProperty(required=True)
-    size = db.StringProperty(required=True)
-    experience = db.IntegerProperty(required=True, default=0)
-    hit_points = db.IntegerProperty(required=True)
-    speed = db.IntegerProperty(required=True)
-    scores = JSONProperty(required=True)
-    powers = db.ListProperty(db.Key, required=True, default=None)
-    items = db.ListProperty(db.Key, required=True, default=None)
-    equipped = db.ListProperty(db.Key, required=True, default=None)
-        
-class PlayerCharacter(Character):
-    cast = db.StringProperty(required=True)
-    height = db.IntegerProperty(required=True)
-    weight = db.IntegerProperty(required=True)    
- """   
-                        
+    # Update score data with Race and Cast bonuses ...
+    race = models.Race.get_by_key_name(self.request.get('race'))
+    cast = models.Cast.get_by_key_name(self.request.get('cast'))    
+    abilities = addBonuses(self, scores, models.ABILITIES_KEY,
+                           race.bonuses, cast.bonuses)    
+    skills = addBonuses(self, scores, models.SKILLS_KEY, 
+                        race.bonuses, cast.bonuses)  
+    defenses = addBonuses(self, scores, models.DEFENSES_KEY, 
+                          race.bonuses, cast.bonuses)
+    
+    player = models.Player(name = self.request.get('name'),
+                           level = 1,
+                           race = self.request.get('race'),
+                           cast = self.request.get('cast'),
+                           alignment = self.request.get('alignment'),
+                           hit_points = hp,
+                           height = self.request.get('height'),
+                           weight = self.request.get('weight'),
+                           scores = scores)
+
+def buildScores(self, cat_key, attr_keys):
+    scores = {}
+    for a in attr_keys:
+        score = {'score': self.request.get(a), 'mod': 0, 'bonuses': None}
+        scores[a] = score
+    return scores
+    
+def addMods(self, scores, cat_key, *mods):
+    for m in mods: # Loop through each List of mods ...
+        for c in cat_key: # Loop through each category in mod List ...
+            if m.c: # If there are mods for that category ...
+                for mod in m.c: # Loop through those mods ...
+                    name = mod.origin
+                    type_ = mod.type
+                    mod = mod.mod
+                    scores.c.type_.mods.push({'origin':origin, 
+                                              'mod': mod, 
+                                              'type': type_})
+
+                    total_mod = scores.c.type_.mod
+                    total_mod =+ mod
+                    scores.c.type_['mod'] = total_mod                 
+    
+    return scores
+                
 ##############################################################################
 ##############################################################################
 application = webapp.WSGIApplication([(r'/api/character/player/(.*)', APIPlayer),
