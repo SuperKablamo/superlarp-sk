@@ -35,6 +35,19 @@ class APIPlayer(webapp.RequestHandler):
         else: r = API404
         return self.response.out.write(simplejson.dumps(r)) 
 
+class APINonPlayer(webapp.RequestHandler):
+    """Provides API access to NonPlayer Character data.  Responses are in JSON.
+    """
+    def get(self, method):
+        logging.info('################### APINonPlayer:: get() #############')
+    
+    def post(self, method):
+        logging.info('################## APINonPlayer:: post() #############')
+        if method == "new": 
+            r = createNonPlayer(self)
+        else: r = API404
+        return self.response.out.write(simplejson.dumps(r))
+
 class APIError(webapp.RequestHandler):
     """Provides basic API error Response in JSON.
     """
@@ -58,52 +71,149 @@ def createPlayer(self):
     skills = buildScores(self, models.SKILLS_KEY, models.SKILL_KEYS)
     defenses = buildScores(self, models.DEFENSES_KEY, models.DEFENSE_KEYS)
     scores = {'abilities': abilities, 'skills': skills, 'defenses': defenses}
-
+    scores = buildDefenses(scores)
     # Update score data with Race and Cast bonuses ...
     race = models.Race.get_by_key_name(self.request.get('race'))
     cast = models.Cast.get_by_key_name(self.request.get('cast'))    
-    abilities = addBonuses(self, scores, models.ABILITIES_KEY,
-                           race.bonuses, cast.bonuses)    
-    skills = addBonuses(self, scores, models.SKILLS_KEY, 
-                        race.bonuses, cast.bonuses)  
-    defenses = addBonuses(self, scores, models.DEFENSES_KEY, 
-                          race.bonuses, cast.bonuses)
-    
-    player = models.Player(name = self.request.get('name'),
-                           level = 1,
-                           race = self.request.get('race'),
-                           cast = self.request.get('cast'),
-                           alignment = self.request.get('alignment'),
-                           hit_points = hp,
-                           height = self.request.get('height'),
-                           weight = self.request.get('weight'),
-                           scores = scores)
-
+    scores = addMods(self, scores, race.mods, cast.mods)
+    hp = buildHitPoints(cast, scores)
+    player = models.PlayerCharacter(name = self.request.get('name'),
+                                    level = 1,
+                                    speed = utils.strToInt(self.request.get('speed')),
+                                    size = self.request.get('size'),
+                                    race = self.request.get('race'),
+                                    cast = self.request.get('cast'),
+                                    alignment = self.request.get('alignment'),
+                                    hit_points = hp,
+                                    height = utils.strToInt(self.request.get('height')),
+                                    weight = utils.strToInt(self.request.get('weight')),
+                                    scores = scores)
+    db.put(player)
+    return 
+        
 def buildScores(self, cat_key, attr_keys):
     scores = {}
     for a in attr_keys:
-        score = {'score': self.request.get(a), 'mod': 0, 'bonuses': None}
-        scores[a] = score
+        # If Defense scores, start at a base of 10 ...
+        if cat_key == models.DEFENSES_KEY:
+            score = 10
+        # But, Ability and Skill scores are set at Character creation ...    
+        else:
+            score = self.request.get(a)
+        mod = 0
+        mods = None
+        # If Ability Scores, then add the Ability modifier ...
+        if cat_key == models.ABILITIES_KEY: 
+            mod = models.ABILITY_MODIFIERS[score]
+            mods = []
+            origin = models.ABILITY_MOD
+            type_ = a
+            mods.append({'origin':origin, 'mod': mod, 'type': type_})
+        score_dict = {'score': score, 'mod': mod, 'mods': mods}
+        scores[a] = score_dict
     return scores
-    
-def addMods(self, scores, cat_key, *mods):
-    for m in mods: # Loop through each List of mods ...
-        for c in cat_key: # Loop through each category in mod List ...
-            if m.c: # If there are mods for that category ...
-                for mod in m.c: # Loop through those mods ...
-                    name = mod.origin
-                    type_ = mod.type
-                    mod = mod.mod
-                    scores.c.type_.mods.push({'origin':origin, 
-                                              'mod': mod, 
-                                              'type': type_})
 
-                    total_mod = scores.c.type_.mod
+def buildHitPoints(cast, scores):
+    logging.info('############## buildHitPoints() ##########################')    
+    #{"hp": 10, "surge": 2, "recharge": 3}
+    con = scores[models.ABILITIES_KEY]['CON']['score']
+    hp = cast.hit_point_base + utils.strToInt(con)
+    surge_recharge = cast.surge_recharge
+    surge = hp//4
+    hit_points = {'hp': hp, 'surge': surge, 'surge_recharge': surge_recharge}
+    return hit_points
+    
+def buildDefenses(scores):
+    logging.info('############## buildDefenses() ###########################')    
+    #TODO: determine higher score for each pair of associated abilities,
+    # add any modifiers . . .
+    for d in DEFENSE_KEYS:
+        if d == 'FORT':
+            str_ = getMod(scores, models.DEFENSE_KEY, 'STR') 
+            con = getMod(scores, models.DEFENSE_KEY, 'CON') 
+            if str_ > con:
+                keyword = 'STR'
+                mod = str_
+            else:    
+                keyword = 'CON'
+                mod = con
+            mod = {'origin': models.ABILITY_MOD, 'mod': mod, 'type': keyword}    
+            scores = setMod(scores, models.DEFENSE_KEY, def_key, mod)
+
+        elif d == 'REF':
+            int_ = getMod(scores, models.DEFENSE_KEY, 'INT') 
+            dex = getMod(scores, models.DEFENSE_KEY, 'DEX')   
+            if int_ > dex:
+                keyword = 'INT'
+                mod = int_
+            else:    
+                keyword = 'DEX'
+                mod = dex
+            mod = {'origin': models.ABILITY_MOD, 'mod': mod, 'type': keyword}    
+            scores = setMod(scores, models.DEFENSE_KEY, def_key, mod)                     
+        elif d == 'WILL':            
+            wis = getMod(scores, models.DEFENSE_KEY, 'WIS') 
+            cha = getMod(scores, models.DEFENSE_KEY, 'CHA')
+            if wis > cha:
+                keyword = 'WIS'
+                mod = wis
+            else:    
+                keyword = 'CHA'
+                mod = cha
+            mod = {'origin': models.ABILITY_MOD, 'mod': mod, 'type': keyword}    
+            scores = setMod(scores, models.DEFENSE_KEY, def_key, mod)            
+                
+    return scores    
+
+def addMods(self, scores, *mods):
+    logging.info('############## addMods() #################################')
+    logging.info('############## scores = '+str(scores)+' ##################')
+    logging.info('############## score_keys = '+str(models.SCORE_KEYS)+' ###')    
+    for m in mods: # Loop through each List of mods ...
+        logging.info('#################### m = '+str(m)+' ##################')
+        for k in models.SCORE_KEYS: # Loop through categories in mod List ...
+            logging.info('#################### k = '+str(k)+' ##############')
+            if m[k]: # If there are mods for that category ...
+                for mod in m[k]: # Loop through those mods ...
+                    logging.info('#################### mod = '+str(mod)+' ##')
+                    origin = mod['origin']
+                    type_ = mod['type']
+                    mod = mod['mod']
+                    if scores[k][type_]['mods'] is None:
+                        mods = []
+                        mods.append({'origin':origin, 'mod': mod, 'type': type_})
+                        scores[k][type_]['mods'] = mods
+                    else:
+                        scores[k][type_]['mods'].append({'origin':origin, 'mod': mod, 'type': type_})
+                    total_mod = scores[k][type_]['mod']
                     total_mod =+ mod
-                    scores.c.type_['mod'] = total_mod                 
+                    scores[k][type_]['mod'] = total_mod                 
     
     return scores
-                
+
+def getMod(scores, cat_key, keyword):
+    logging.info('######################## getMod() ########################')    
+    mod = scores[cat_key][keyword]['mod']
+    return utils.strToInt(mod)
+    
+def getScore(scores, cat_key, keyword):
+    logging.info('######################## getScore() ######################')      
+    score = scores[cat_key][keyword]['score']    
+    return utils.strToInt(score)    
+    
+def setMod(scores, cat_key, keyword, mod):
+    logging.info('######################## setMod() ########################')
+    scores[cat_key][keyword]['mods'].append(mod)
+    total_mod = scores[cat_key][keyword]['mod']
+    total_mod =+ mod['mod']
+    scores[cat_key][keyword]['mod'] = total_mod
+    return scores
+    
+def setScore(scores, cat_key, keyword, score):          
+    logging.info('######################## setScore() ######################')  
+    scores[cat_key][keyword]['score'] = score       
+    return scores
+                     
 ##############################################################################
 ##############################################################################
 application = webapp.WSGIApplication([(r'/api/character/player/(.*)', APIPlayer),

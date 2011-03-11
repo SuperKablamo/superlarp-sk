@@ -82,43 +82,61 @@ CAST_DATA = [
      'motto': 'Have courage, my friends!  Pelor favors us today!',
      'hit_point_base': 12,
      'hit_point_level': 5,
+     'surge_recharge': 12342,
      'base_skill': 'Religion',
      'skills': ['Arcana', 'Diplomacy', 'Heal', 'History', 'Insight'],
+     'ability_mods': [],      
+     'skill_mods': [],      
      'defense_mods': [{'origin': 'Cleric', 'type': 'WILL', 'mod': 2}] },
     {'name': 'Ranger',
      'motto': 'I\'ll get the one in the back.  That\'s one hobgoblin who\'ll regret lifting a bow.',
      'hit_point_base': 12,
      'hit_point_level': 5,
+     'surge_recharge': 14400,     
      'base_skill': 'Nature',
      'skills': ['Acrobatics', 'Athletics', 'Dungeoneering', 'Endurance', 'Heal', 'Perception', 'Stealth'],
+     'ability_mods': [],      
+     'skill_mods': [],     
      'defense_mods': [{'origin': 'Ranger', 'type': 'FORT', 'mod': 1}, {'origin': 'Ranger', 'type': 'REF', 'mod': 1}] },     
     {'name': 'Rogue',
      'motto': 'You look surprised to see me.  If you\'d been paying attention, you might still be alive.',
      'hit_point_base': 12,
      'hit_point_level': 5,
+     'surge_recharge': 14400,     
      'base_skill': 'Stealth',
      'skills': ['Acrobatics', 'Athletics', 'Bluff', 'Dungeoneering', 'Insight', 'Intimidate', 'Perception', 'Streetwise', 'Thievery'],
+     'ability_mods': [],      
+     'skill_mods': [],     
      'defense_mods': [{'origin': 'Rogue', 'type': 'REF', 'mod': 2}] },     
     {'name': 'Wizard',
      'motto': 'I am the fire that burns, the choking fog, the storm that rains devastation on our foes.',
      'hit_point_base': 10,
      'hit_point_level': 4,
+     'surge_recharge': 14400,          
      'base_skill': 'Arcana',
      'skills': ['Diplomacy', 'Dungeoneering', 'History', 'Insight', 'Nature', 'Religion'],
+     'ability_mods': [],      
+     'skill_mods': [],     
      'defense_mods': [{'origin': 'Wizard', 'type': 'WILL', 'mod': 2}] },  
     {'name': 'Fighter',
      'motto': 'You\'ll have to deal with me first, dragon!',
      'hit_point_base': 15,
      'hit_point_level': 6,
+     'surge_recharge': 9600,
      'base_skill': 'Athletics',
      'skills': ['Endurance', 'Heal', 'Intimidate', 'Streetwise'],
+     'ability_mods': [],      
+     'skill_mods': [],     
      'defense_mods': [{'origin': 'Fighter', 'type': 'FORT', 'mod': 2}] },  
     {'name': 'Barbarian',
      'motto': 'My strength is the fury of the wild.',
      'hit_point_base': 15,
      'hit_point_level': 6,
+     'surge_recharge': 10800,     
      'base_skill': 'Endurance',
      'skills': ['Acrobatics', 'Athletics', 'Heal', 'Intimidate', 'Nature', 'Perception'],
+     'ability_mods': [],      
+     'skill_mods': [],     
      'defense_mods': [{'origin': 'Barbarian', 'type': 'FORT', 'mod': 2}] }]     
      
 ######################## METHODS #############################################
@@ -165,20 +183,29 @@ def seedCasts():
     casts = []
     for x in CAST_DATA:
         logging.info('################## x = '+str(x)+' ####################')
-        defenses = []
         skills = []
+        abilities = []
+        trainable_skills = []
+        defenses = []
+        for a in x['ability_mods']:
+            abilities.append(a)
+        for a in x['skill_mods']:
+            skills.append(a)            
         for a in x['defense_mods']:
             defenses.append(a)            
-        mods = {models.DEFENSES_KEY: defenses} 
+        mods = {models.ABILITIES_KEY: abilities,
+                   models.SKILLS_KEY: skills,
+                   models.DEFENSES_KEY: defenses}
         for a in x['skills']:
-            skills.append(a)           
+            trainable_skills.append(a)           
         cast = models.Cast(key_name = x['name'],
                            name = x['name'],
                            motto = x['motto'],
                            hit_point_base = x['hit_point_base'],
                            hit_point_level = x['hit_point_level'],
+                           surge_recharge = x['surge_recharge'],
                            base_skill = x['base_skill'],
-                           skills = skills,
+                           skills = trainable_skills,
                            mods = mods)
         casts.append(cast)
     

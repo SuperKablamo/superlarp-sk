@@ -15,6 +15,8 @@ from google.appengine.ext.db import polymodel
 ABILITIES_KEY = 'abilities'
 SKILLS_KEY = 'skills'
 DEFENSES_KEY = 'defenses'
+ABILITY_MOD = 'Ability'
+SCORE_KEYS = [ABILITIES_KEY, SKILLS_KEY, DEFENSES_KEY]
 
 ABILITY_KEYS = ['STR', 'CON', 'DEX', 'INT', 'WIS', 'CHA']
 
@@ -25,6 +27,14 @@ SKILL_KEYS = ['Acrobatics', 'Arcana', 'Athletics', 'Bluff', 'Diplomacy',
           
 DEFENSE_KEYS = ['AC', 'FORT', 'REF', 'WILL']
 
+ABILITY_MODIFIERS = {'1': -5, '2': -4, '3': -4, '4': -3, '5': -3, '6': -2, 
+                     '7': -2, '8': -1, '9': -1, '10': 0, '11': 0, '12': 1,
+                     '13': 1, '14': 2, '15': 2, '16': 3, '17': 3, '18': 4,
+                     '19': 4, '20': 5, '21': 5, '22': 6, '23': 6, '24': 7,
+                     '25': 7, '26': 8, '27': 8}
+                
+ALIGNMENTS = ['Good', 'Lawful good', 'Unaligned', 'Evil', 'Chaotic Evil']                     
+                     
 ############################# CUSTOM PROPERTIES ##############################
 ##############################################################################   
 class JSONProperty(db.TextProperty):
@@ -61,11 +71,11 @@ class Character(polymodel.PolyModel):
     alignment = db.StringProperty(required=True)
     size = db.StringProperty(required=True)
     experience = db.IntegerProperty(required=True, default=0)
-    hit_points = db.IntegerProperty(required=True)
     speed = db.IntegerProperty(required=True)
     powers = db.ListProperty(db.Key, required=True, default=None)
     items = db.ListProperty(db.Key, required=True, default=None)
     equipped = db.ListProperty(db.Key, required=True, default=None)
+    hit_points = JSONProperty(required=True) # {"hp": 10, "surge": 2, "recharge": 10800}
     scores = JSONProperty(required=True)  #  {"abilities": {"STR": {"score": 10, "mod": 1, "mods": [{"origin": "Singing Sword", "mod": 1}, {"origin": "Dwarf", "mod": 1}]}}, "skills": {"Acrobatics": {"score": 10, "mod": 1, "mods": [{"origin": "trained", "mod": 5}, {"origin": "DEX", "mod": 1}]}}}
        
         
@@ -207,6 +217,7 @@ class Cast(db.Model):
     motto = db.StringProperty(required=True)    
     hit_point_base = db.IntegerProperty(required=True) 
     hit_point_level = db.IntegerProperty(required=True)
+    surge_recharge = db.IntegerProperty(required=True)
     base_skill = db.StringProperty(required=True)
     skills = db.StringListProperty(required=True, default=None)
     mods = JSONProperty(required=True) # {"skills": [], "abilities": [], "defenses": [{'origin': 'Wizard', 'type': 'FORT', 'mod': 1}, {'origin': 'Wizard', 'type': 'REF', 'mod': 1}]}      
