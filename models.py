@@ -135,6 +135,7 @@ class Power(polymodel.PolyModel):
     created = db.DateTimeProperty(auto_now_add=True)
     updated = db.DateTimeProperty(auto_now=True)    
     name = db.StringProperty(required=True)
+    description = db.TextProperty(required=True)
     recharge = db.IntegerProperty(required=True) # Seconds to recharge
     level = db.IntegerProperty(required=True) # Level requirement
     source_keyword = db.StringProperty(required=False) 
@@ -149,8 +150,10 @@ class Attack(Power):
     attack_ability = db.StringProperty(required=True) # Attacker ability
     attack_mod = db.IntegerProperty(required=True, default=0) # Attack bonus
     defense_ability = db.StringProperty(required=True) # Defender ability
-    hit_weapon_multiplier = db.IntegerProperty(required=True, default=1)
-    hit_ability_bonus = db.StringProperty(required=False) 
+    damage_weapon_multiplier = db.IntegerProperty(required=False) # Damage multiplier for weapon used
+    damage_ability_mod = db.StringProperty(required=False) # Type of damage die to roll
+    damage_dice = db.IntegerProperty(required=False) # Number of damage dice to roll
+    damage_die = db.IntegerProperty(required=False)
     effect = db.StringProperty(required=False)
     max_targets = db.IntegerProperty(required=True, default=1)
     max_attacks = db.IntegerProperty(required=True, default=1)
@@ -176,16 +179,16 @@ class Item(polymodel.PolyModel):
     magic = db.BooleanProperty(required=True, default=False)    
     cast = db.StringListProperty(required=True, default=None) # Allowed Casts  
     power = db.ReferenceProperty(required=False) # Inherent Power
-    mods = JSONProperty(required=True)
+    #mods = JSONProperty(required=True)
     
 class Weapon(Item):
-    attack_mod = db.IntegerProperty(required=True) # Modifier to attack roll
     damage_die = db.IntegerProperty(required=True) # Type of die to roll
     dice = db.IntegerProperty(required=True) # Number of dice to roll
-    group = db.StringListProperty(required=True)
+    group = db.StringProperty(required=True)
     attributes = db.StringListProperty(required=True)
     short_range = db.IntegerProperty(required=True, default=0)
     long_range = db.IntegerProperty(required=True, default=0)
+    proficiency = db.IntegerProperty(required=True, default=0)
     
 class Armor(Item):
     armor_mod = db.IntegerProperty(required=True) # Modifier to armor
@@ -193,7 +196,7 @@ class Armor(Item):
     speed_mod = db.IntegerProperty(required=True) # Modifier to speed
     
 class Implement(Item):
-    category = db.StringProperty(required=True) # Staff, Rod, Orb ...
+    category = db.StringProperty(required=True) # Staff, Rod, Orb ...   
         
 class Gear(Item):                    
     foo = db.StringProperty(required=False)  
@@ -220,6 +223,7 @@ class Cast(db.Model):
     surge_recharge = db.IntegerProperty(required=True)
     base_skill = db.StringProperty(required=True)
     skills = db.StringListProperty(required=True, default=None)
+    armor_proficiencies = db.StringListProperty(required=True, default=None)
     mods = JSONProperty(required=True) # {"skills": [], "abilities": [], "defenses": [{'origin': 'Wizard', 'type': 'FORT', 'mod': 1}, {'origin': 'Wizard', 'type': 'REF', 'mod': 1}]}      
     
 class Race(db.Model):

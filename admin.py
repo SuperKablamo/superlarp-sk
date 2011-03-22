@@ -5,6 +5,7 @@
 
 ############################# SK IMPORTS #####################################
 ############################################################################## 
+import models
 import rules
 import seed
 
@@ -46,11 +47,14 @@ class InitAdmin(webapp.RequestHandler):
             r = seed.seedRaces()
         elif method == "casts": 
             r = seed.seedCasts()
+        elif method == "weapons": 
+            r = seed.seedWeapons()
+        elif method == "attacks": 
+            r = seed.seedAttacks()                        
         elif method == "bonuses": 
             r = seed.seedBonuses()            
         #else: r = API404
         #return self.response.out.write(simplejson.dumps(r))
-
 
 class CastAdmin(webapp.RequestHandler):
     def get(self):
@@ -89,9 +93,10 @@ class PowerAdmin(webapp.RequestHandler):
 
 class CharacterAdmin(webapp.RequestHandler):
     def get(self):
+        characters = models.PlayerCharacter.all().fetch(10)
         template_values = {
-            'text': 'Hello World'
-        }
+            'characters': characters
+        }        
         generate(self, 'admin_character.html', template_values)                             
         
 ######################## METHODS #############################################

@@ -71,6 +71,7 @@ def createPlayer(self):
     skills = buildScores(self, models.SKILLS_KEY, models.SKILL_KEYS)
     defenses = buildScores(self, models.DEFENSES_KEY, models.DEFENSE_KEYS)
     scores = {'abilities': abilities, 'skills': skills, 'defenses': defenses}
+    logging.info('###################### score = '+str(scores)+'############')
     scores = buildDefenses(scores)
     # Update score data with Race and Cast bonuses ...
     race = models.Race.get_by_key_name(self.request.get('race'))
@@ -127,41 +128,47 @@ def buildDefenses(scores):
     logging.info('############## buildDefenses() ###########################')    
     #TODO: determine higher score for each pair of associated abilities,
     # add any modifiers . . .
-    for d in DEFENSE_KEYS:
+    for d in models.DEFENSE_KEYS:
         if d == 'FORT':
-            str_ = getMod(scores, models.DEFENSE_KEY, 'STR') 
-            con = getMod(scores, models.DEFENSE_KEY, 'CON') 
+            str_ = getMod(scores, models.ABILITIES_KEY, 'STR') 
+            con = getMod(scores, models.ABILITIES_KEY, 'CON') 
             if str_ > con:
                 keyword = 'STR'
                 mod = str_
+                logging.info('########### STR mod = '+str(mod)+' ###########')
             else:    
                 keyword = 'CON'
                 mod = con
+                logging.info('########### CON mod = '+str(mod)+' ###########')
             mod = {'origin': models.ABILITY_MOD, 'mod': mod, 'type': keyword}    
-            scores = setMod(scores, models.DEFENSE_KEY, def_key, mod)
+            scores = setMod(scores, models.DEFENSES_KEY, d, mod)
 
         elif d == 'REF':
-            int_ = getMod(scores, models.DEFENSE_KEY, 'INT') 
-            dex = getMod(scores, models.DEFENSE_KEY, 'DEX')   
+            int_ = getMod(scores, models.ABILITIES_KEY, 'INT') 
+            dex = getMod(scores, models.ABILITIES_KEY, 'DEX')   
             if int_ > dex:
                 keyword = 'INT'
                 mod = int_
+                logging.info('########### INT mod = '+str(mod)+' ###########')
             else:    
                 keyword = 'DEX'
                 mod = dex
+                logging.info('########### DEX mod = '+str(mod)+' ###########')                
             mod = {'origin': models.ABILITY_MOD, 'mod': mod, 'type': keyword}    
-            scores = setMod(scores, models.DEFENSE_KEY, def_key, mod)                     
+            scores = setMod(scores, models.DEFENSES_KEY, d, mod)                     
         elif d == 'WILL':            
-            wis = getMod(scores, models.DEFENSE_KEY, 'WIS') 
-            cha = getMod(scores, models.DEFENSE_KEY, 'CHA')
+            wis = getMod(scores, models.ABILITIES_KEY, 'WIS') 
+            cha = getMod(scores, models.ABILITIES_KEY, 'CHA')
             if wis > cha:
                 keyword = 'WIS'
                 mod = wis
+                logging.info('########### WIS mod = '+str(mod)+' ###########')                
             else:    
                 keyword = 'CHA'
                 mod = cha
+                logging.info('########### CHA mod = '+str(mod)+' ###########')                
             mod = {'origin': models.ABILITY_MOD, 'mod': mod, 'type': keyword}    
-            scores = setMod(scores, models.DEFENSE_KEY, def_key, mod)            
+            scores = setMod(scores, models.DEFENSES_KEY, d, mod)            
                 
     return scores    
 
@@ -203,7 +210,14 @@ def getScore(scores, cat_key, keyword):
     
 def setMod(scores, cat_key, keyword, mod):
     logging.info('######################## setMod() ########################')
-    scores[cat_key][keyword]['mods'].append(mod)
+    logging.info('######################## cat_key = '+cat_key+' ###########')    
+    logging.info('######################## keyword = '+keyword+' ###########')    
+    logging.info('######################## mod = '+str(mod)+' ###########')        
+    try:
+        mods = [mod]
+        scores[cat_key][keyword]['mods'] = mods
+    except AttributeError:
+        scores[cat_key][keyword]['mods'].append(mod)
     total_mod = scores[cat_key][keyword]['mod']
     total_mod =+ mod['mod']
     scores[cat_key][keyword]['mod'] = total_mod
