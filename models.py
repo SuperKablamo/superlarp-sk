@@ -249,6 +249,7 @@ class Race(db.Model):
     languages = db.StringListProperty(required=True, default=None)  
     mods = JSONProperty(required=True) # {"skills": [{'origin': 'Human', 'type': "Dungeoneering", 'mod': 2}, {'origin': 'Human', 'type': Endurance", 'mod': 2}], "defenses": []}      
     bonuses = JSONProperty(required=True) # {"abilities": [{'origin': 'Human', 'type': "CON", 'mod': 2}, {'origin': 'Human', 'type': "WIS", 'mod': 2}]}
+
 class Treasure(db.Model):
     level = db.IntegerProperty(required=True, default=1) # Level requirement           
     items = db.ListProperty(db.Key, required=True, default=None)          

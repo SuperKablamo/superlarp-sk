@@ -135,7 +135,7 @@
 			{% endfor %}
 		</tr>	
 	</table>	
-	<form class="items" action="/api/character/player/item/weapon/add">
+	<form class="items" method="POST" action="/api/character/player/item/weapon/add">
 		<label><strong>ADD WEAPONS</strong></label><br />
 		<input type="hidden" name="player_id" value={{character.key.id}}>
 		{% for x in weapons %}
@@ -144,7 +144,7 @@
 		<br /><br />
     <input type="submit" value="Submit" />		
 	</form>
-	<form class="items" action="/api/character/player/power/attack/add">
+	<form class="items" method="POST" action="/api/character/player/power/attack/add">
 		<label><strong>ADD ATTACK POWERS</strong></label><br />
 		<input type="hidden" name="player_id" value={{character.key.id}}>
 		{% for x in powers %}

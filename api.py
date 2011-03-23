@@ -25,9 +25,13 @@ from google.appengine.ext.webapp.util import run_wsgi_app
 class APIPlayer(webapp.RequestHandler):
     """Provides API access to Player Character data.  Responses are in JSON.
     """
-    def get(self, method):
+    def get(self, player_id):
         logging.info('################### APIPlayer:: get() ################')
-    
+        i = utils.strToInt(player_id)
+        player = models.PlayerCharacter.get_by_id(i)
+        r = getJSONPlayer(player)
+        return self.response.out.write(simplejson.dumps(r))
+        
     def post(self, method):
         logging.info('################## APIPlayer:: post() ################')
         if method == "new": 
@@ -36,7 +40,7 @@ class APIPlayer(webapp.RequestHandler):
         return self.response.out.write(simplejson.dumps(r)) 
 
 class APINonPlayer(webapp.RequestHandler):
-    """Provides API access to NonPlayer Character data.  Responses are in JSON.
+    """Provides API access to NonPlayer Character data. Responses are in JSON.
     """
     def get(self, method):
         logging.info('################### APINonPlayer:: get() #############')
@@ -68,16 +72,31 @@ class APIPlayerItem(webapp.RequestHandler):
 
     def post(self, model, method):
         logging.info('################# APIPlayerItem:: post() #############')
-        if model == "weapon":
+        r = API404
+        if model == models.WPN.lower():
             if method == "add":
                 player_id = self.request.get('player_id')
-                weapon_name = self.request.get('weapon_name')
-                
-                i = utils.strToInt(player_id)
-                player = models.Player.get_by_id(i)
-                weapon = models.Weapon.get_by_key_name(weapon_name)
-                player.items.append(weapon)
-                db.put(player)            
+                name = self.request.get('weapon_name')
+                player = addToPlayer(models.Weapon, name, player_id)
+                r =  getJSONPlayer(player)         
+        return self.response.out.write(simplejson.dumps(r))   
+
+class APIPlayerPower(webapp.RequestHandler):
+    """Provides API access to Player Power data.  Responses are in JSON.
+    """
+    def get(self, type, method):
+        r = API404
+        return self.response.out.write(simplejson.dumps(r)) 
+
+    def post(self, model, method):
+        logging.info('################# APIPlayerPower:: post() ############')
+        r = API404
+        if model == models.ATT.lower():
+            if method == "add":
+                player_id = self.request.get('player_id')
+                name = self.request.get('attack_name')
+                player = addToPlayer(models.Attack, name, player_id)
+                r =  getJSONPlayer(player)         
         return self.response.out.write(simplejson.dumps(r)) 
             
                
@@ -89,7 +108,8 @@ def getJSONPlayer(player):
             'experience': player.experience, 'speed': player.speed, 
             'hit_points': player.hit_points, 'cast': player.cast, 
             'height': player.height, 'weight': player.weight, 
-            'scores': player.scores}
+            'scores': player.scores, 'created': str(player.created), 
+            'id': str(player.key().id())}
             
     # Construct JSON for Player Powers
     powers = db.get(player.powers)
@@ -98,14 +118,11 @@ def getJSONPlayer(player):
     healing = [] 
     for p in powers:
         if p.class_name() == models.ATT:
-            j = getJSONPower(models.ATT, p)
-            attacks.append(j)   
+            attacks.append(p.json)   
         elif p.class_name() == models.UTL:
-            j = getJSONPower(models.UTL, p)
-            utilities.append(j)
+            utilities.append(p.json)
         elif p.class_name() == models.HEL:
-            j = getJSONPower(models.HEL, p)
-            healing.append(j)
+            healing.append(p.json)
                         
     powers_json = {'attacks': attacks, 
                    'utilities': utilities, 
@@ -119,17 +136,13 @@ def getJSONPlayer(player):
     gear = []                   
     for i in items:  
         if i.class_name() == models.WPN:
-            j = getJSONItem(models.WPN, i)
-            weapons.append(j)        
+            weapons.append(i.json)        
         elif i.class_name() == models.ARM:      
-            j = getJSONItem(models.ARM, i)
-            armor.append(j)
+            armor.append(i.json)
         elif i.class_name() == models.IMP:      
-            j = getJSONItem(models.IMP, i)
-            implements.append(j)
+            implements.append(i.json)
         elif i.class_name() == models.GEA:      
-            j = getJSONItem(models.GEA, i)
-            gear.append(j)
+            gear.append(i.json)
 
     items_json = {'weapons': weapons, 'armor': armor, 
                   'implements': implements, 'gear': gear}
@@ -138,9 +151,27 @@ def getJSONPlayer(player):
     json['items'] = items_json
     return json
 
-   
-
-
+def addToPlayer(model_type, object_name, player_id):
+    """Adds an Item or Power to a Player.
+    """
+    args = '('+str(model_type)+', '+object_name+', '+player_id+')'
+    logging.info('########## addToPlayer'+args)
+    id_ = utils.strToInt(player_id)
+    player = models.PlayerCharacter.get_by_id(id_)
+    object_ = model_type.get_by_key_name(object_name)
+    name = model_type.class_name() 
+    logging.info('########## name = '+name+' ###############################')
+    # Determine whether this is object is a subclass of Item or Power
+    if name in (models.WPN, models.ARM, models.IMP, models.GEA): 
+        player.items.append(object_.key())
+        logging.info('########## object_.key() = '+str(object_.key())+' ####')        
+    elif name in (models.ATT, models.UTL, models.HEL):
+        player.powers.append(object_.key())
+        logging.info('########## object_.key() = '+str(object_.key())+' ####')  
+    else:
+        logging.info('########## NO MATCH FOUND for '+object_name+' ########')    
+    db.put(player)  
+    return player
 
 def createPlayer(self):
     """Creates a new Player Character and returns that character as a JSON
@@ -326,12 +357,14 @@ def setScore(scores, cat_key, keyword, score):
                      
 ##############################################################################
 ##############################################################################
-application = webapp.WSGIApplication([(r'/api/character/player/(.*)', 
+application = webapp.WSGIApplication([(r'/api/character/player/item/(.*)/(.*)', 
+                                       APIPlayerItem),
+                                      (r'/api/character/player/power/(.*)/(.*)', 
+                                       APIPlayerPower), 
+                                      (r'/api/character/player/(.*)', 
                                        APIPlayer),
                                       (r'/api/character/nonplayer/(.*)', 
                                        APINonPlayer),
-                                      (r'/api/character/player/item/(.*)/(.*)'), 
-                                       APIPLayerItem),
                                       (r'/api/(.*)', APIError)
                                      ],
                                      debug=True)
