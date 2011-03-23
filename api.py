@@ -196,7 +196,7 @@ def addMods(self, scores, *mods):
                     total_mod = scores[k][type_]['mod']
                     logging.info('##### total_mod = '+str(total_mod)+' #####')  
                     logging.info('##### mod = '+str(mod)+' ##########')                                           
-                    total_mod =+ mod
+                    total_mod += mod
                     logging.info('##### total_mod = '+str(total_mod)+' #####')                      
                     scores[k][type_]['mod'] = total_mod      
                     logging.info('# mod = '+str(scores[k][type_]['mod'])+' #')                                 
@@ -227,7 +227,7 @@ def setMod(scores, cat_key, keyword, mod):
         scores[cat_key][keyword]['mods'].append(mod)
     total_mod = scores[cat_key][keyword]['mod']
     logging.info('##################### total_mod = '+str(total_mod)+' #####')   
-    total_mod =+ mod['mod']
+    total_mod += mod['mod']
     logging.info('##################### mod = '+str(mod['mod'])+' ##########')      
     logging.info('##################### total_mod = '+str(total_mod)+' #####')   
     scores[cat_key][keyword]['mod'] = total_mod
