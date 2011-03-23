@@ -40,8 +40,11 @@ PC = "PlayerCharacter"
 NPC = "NonPlayerCharacter"
 WPN = "Weapon"
 ARM = "Armor"
+IMP = "Implement"
+GEA = "Gear"
 ATT = "Attack"  
-UTL = "Utility"                
+UTL = "Utility"   
+HEL = "Heal"             
                      
 ############################# CUSTOM PROPERTIES ##############################
 ##############################################################################   
@@ -148,11 +151,11 @@ class Power(polymodel.PolyModel):
     level = db.IntegerProperty(required=True) # Level requirement
     source_keyword = db.StringProperty(required=False) 
     effect_keyword = db.StringProperty(required=False) 
-    cast = db.StringListProperty(required=True, default=None) # Allowed Casts
-    mods = JSONProperty(required=True)
+    casts = db.StringListProperty(required=True, default=None) # Allowed Casts
+    json = JSONProperty(required=False)
     
 class Attack(Power):
-    damage_keyword = db.StringListProperty(required=True, default=None)
+    damage_keywords = db.StringListProperty(required=True, default=None)
     accessory_keyword = db.StringProperty(required=False)
     attack_range = db.IntegerProperty(required=True, default=0)
     attack_ability = db.StringProperty(required=True) # Attacker ability
@@ -185,13 +188,13 @@ class Item(polymodel.PolyModel):
     cost = db.IntegerProperty(required=True)
     weight = db.IntegerProperty(required=True, default=0)
     magic = db.BooleanProperty(required=True, default=False)    
-    cast = db.StringListProperty(required=True, default=None) # Allowed Casts  
+    casts = db.StringListProperty(required=True, default=None) # Allowed Casts  
     power = db.ReferenceProperty(required=False) # Inherent Power
-    #mods = JSONProperty(required=True)
+    json = JSONProperty(required=True)
     
 class Weapon(Item):
     damage_die = db.IntegerProperty(required=True) # Type of die to roll
-    dice = db.IntegerProperty(required=True) # Number of dice to roll
+    damage_dice = db.IntegerProperty(required=True) # Number of dice to roll
     group = db.StringProperty(required=True)
     attributes = db.StringListProperty(required=True)
     short_range = db.IntegerProperty(required=True, default=0)

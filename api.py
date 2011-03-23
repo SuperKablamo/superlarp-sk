@@ -138,38 +138,9 @@ def getJSONPlayer(player):
     json['items'] = items_json
     return json
 
-def getJSONPower(model_name, model):
-    json = {'name': model.name, 'description': model.description, 
-            'recharge': model.recharge, 'level': model.level, 
-            'source_keyword': model.source_keyword, 'cast': model.cast
-            'effect_keyword': model.effect_keyword, 'mods': models.mods}
-    
-    # Construct JSON specific to the subclass        
-    if model_name == models.ATT:
-        json[''] = model.
-        json[''] = model.
-        json[''] = model.
-        json[''] = model.
-        json[''] = model.
-        json[''] = model.
-        json[''] = model.
-        json[''] = model.
-        json[''] = model.
-        json[''] = model.
+   
 
-    elif model_name == models.UTL:
-        json[''] = model.
-        json[''] = model.        
-    elif model_name == models.HEL:
-        json[''] = model.
-        json[''] = model.
 
-def getJSONItem(model_name, model):
-
-    if model_name == models.WPN:
-    elif model_name == models.ARM:
-    elif model_name == models.IMP:
-    elif model_name == models.GEA:
 
 def createPlayer(self):
     """Creates a new Player Character and returns that character as a JSON

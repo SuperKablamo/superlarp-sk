@@ -849,13 +849,15 @@ def seedWeapons():
                                magic = x['magic'],
                                power = x['power'],
                                damage_die = x['damage_die'],
-                               dice = x['dice'],
+                               damage_dice = x['dice'],
                                group = x['group'],
                                attributes = attributes,
-                               cast = casts,
+                               casts = casts,
                                short_range = x['short_range'],
                                long_range = x['long_range'],
                                proficiency = x['prof'])          
+        
+        weapon.json = getJSONItem(models.WPN, weapon)
         weapons.append(weapon)
     
     db.put(weapons)    
@@ -883,9 +885,9 @@ def seedAttacks():
                                level = x['level'],
                                source_keyword = x['source_keyword'],
                                accessory_keyword = x['accessory_keyword'],
-                               damage_keyword = damage_keywords,
+                               damage_keywords = damage_keywords,
                                effect_keyword = x['effect_keyword'],
-                               cast = casts,
+                               casts = casts,
                                attack_range = x['attack_range'],
                                attack_ability = x['attack_ability'],
                                attack_mod = x['attack_mod'],
@@ -896,7 +898,72 @@ def seedAttacks():
                                damage_die = x['damage_die'],
                                max_targets =  x['max_targets'],
                                max_attacks = x['max_attacks'])
-        attacks.append(attack)
+        
+        attack.json = getJSONPower(models.ATT, attack)
+        attacks.append(attack)      
         
     db.put(attacks)                         
-    return                 
+    return  
+    
+def getJSONPower(model_name, model):
+    json = {'name': model.name, 'description': model.description, 
+            'recharge': model.recharge, 'level': model.level, 
+            'source_keyword': model.source_keyword, 'casts': model.casts,
+            'effect_keyword': model.effect_keyword}
+    
+    # Construct JSON specific to the subclass        
+    if model_name == models.ATT:
+        json['damage_keywords'] = model.damage_keywords
+        json['accessory_keyword'] = model.accessory_keyword
+        json['attack_range'] = model.attack_range
+        json['attack_ability'] = model.attack_ability
+        json['attack_mod'] = model.attack_mod
+        json['defense_ability'] = model.defense_ability
+        json['damage_weapon_multiplier'] = model.damage_weapon_multiplier
+        json['damage_ability_mod'] = model.damage_ability_mod
+        json['damage_dice'] = model.damage_dice
+        json['damage_die'] = model.damage_die
+        json['effect'] = model.effect
+        json['max_targets'] = model.max_targets
+        json['max_attacks'] = model.max_attacks    
+
+    elif model_name == models.UTL:
+        json['foo'] = model.foo
+             
+    elif model_name == models.HEL:
+        json['hit_points'] = model.hit_points
+        json['effect_range'] = model.effect_range
+    
+    return json
+                   
+def getJSONItem(model_name, model):
+    json = {'name': model.name, 'description': model.description, 
+            'level': model.level, 'slot': model.slot, 'cost': model.cost,
+            'casts': model.casts, 'weight': model.weight, 
+            'magic': model.magic}
+    if model.power is not None:
+        json['power'] = model.power.name        
+
+    # Construct JSON specific to the subclass             
+    if model_name == models.WPN:
+        json['damage_die'] = model.damage_die
+        json['damage_dice'] = model.damage_dice
+        json['group'] = model.group
+        json['attributes'] = model.attributes
+        json['short_range'] = model.short_range
+        json['long_range'] = model.long_range
+        json['proficiency'] = model.proficiency
+        
+    elif model_name == models.ARM:
+        json['armor_mod'] = model.armor_mod
+        json['check_mod'] = model.check_mod
+        json['speed_mod'] = model.speed_mod
+                            
+    elif model_name == models.IMP:
+        json['category'] = model.category
+    
+    elif model_name == models.GEA:  
+        json['foo'] = model.foo
+        
+    return json    
+                         
