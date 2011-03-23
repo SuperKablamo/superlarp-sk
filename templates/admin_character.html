@@ -2,52 +2,157 @@
 
 {% block content %}
 <div>
-	<h2>Characters</h2>
-	{% for c in characters %}
-		<a href="" >c.name</a>
-	{% endfor %}
-</div>	
-<div>
-	<h2>New Character</h2>
-	<form method="post" action="/api/character/player/new">
-		<label>Character Data</label><br/>
-		<label>Name</label><input type="text" name="name" value="Wulfgar The Angry" /><br/>
-		<label>Level</label><input type="text" name="level" value="1" /><br/>		
-		<label>Cast</label><input type="text" name="cast" value="Fighter" /><br/>		
-		<label>Race</label><input type="text" name="race" value="Human" /><br/>		
-		<label>Alignment</label><input type="text" name="alignment" value="Good" /><br/>		
-		<label>Hit Points</label><input type="text" name="hp" value="16" /><br/>
-		<label>Size</label><input type="text" name="size" value="Medium" /><br/>		
-		<label>Speed</label><input type="text" name="speed" value="6" /><br/>					
-		<label>Height</label><input type="text" name="height" value="160" /><br/>		
-		<label>Weight</label><input type="text" name="weight" value="220" /><br/><br/>		
-		<label>Ability Scores</label><br/>
-		<label>STR</label><input type="text" name="STR" value="10" /><br/>
-		<label>CON</label><input type="text" name="CON" value="11" /><br/>
-		<label>DEX</label><input type="text" name="DEX" value="12" /><br/>
-		<label>INT</label><input type="text" name="INT" value="13" /><br/>		
-		<label>WIS</label><input type="text" name="WIS" value="14" /><br/>
-		<label>CHA</label><input type="text" name="CHA" value="16" /><br/><br/>
-		<label>Skill Scores</label><br/>
-		<label>Acrobatics</label><input type="text" name="Acrobatics" value="5" /><br/>
-		<label>Arcana</label><input type="text" name="Arcana" value="0" /><br/>
-		<label>Athletics</label><input type="text" name="Athletics" value="0" /><br/>
-		<label>Bluff</label><input type="text" name="Bluff" value="0" /><br/>
-		<label>Diplomacy</label><input type="text" name="Diplomacy" value="0" /><br/>
-		<label>Dungeoneering</label><input type="text" name="Dungeoneering" value="5" /><br/>
-		<label>Endurance</label><input type="text" name="Endurance" value="2" /><br/>
-		<label>Heal</label><input type="text" name="Heal" value="1" /><br/>
-		<label>History</label><input type="text" name="History" value="0" /><br/>
-		<label>Insight</label><input type="text" name="Insight" value="0" /><br/>
-		<label>Intimidate</label><input type="text" name="Intimidate" value="0" /><br/>
-		<label>Nature</label><input type="text" name="Nature" value="2" /><br/>
-		<label>Perception</label><input type="text" name="Perception" value="1" /><br/>		
-		<label>Religion</label><input type="text" name="Religion" value="2" /><br/>	
-		<label>Stealth</label><input type="text" name="Stealth" value="0" /><br/>	
-		<label>Streetwise</label><input type="text" name="Streetwise" value="5" /><br/>							
-		<label>Thievery</label><input type="text" name="Thievery" value="0" /><br/><br/>		
-    <input type="submit" value="Submit" />
+	<h2>Character: {{character.name}}</h2>
+	<table>
+		<tr>
+			<th>Class</th>
+			<th>Race</th>
+			<th>Weight</th>
+			<th>Height</th>
+			<th>Alignment</th>				
+		</tr>	
+		<tr>
+			<td>{{character.cast}}</td>
+			<td>{{character.race}}</td>
+			<td>{{character.weight}}</td>			
+			<td>{{character.height}}</td>
+			<td>{{character.alignment}}</td>
+		</tr>	
+	</table>	
+	<table>
+		<tr>
+			<th>ABILITY</th>
+			<th>STR</th>
+			<th>CON</th>
+			<th>DEX</th>						
+			<th>INT</th>
+			<th>WIS</th>
+			<th>CHA</th>
+		</tr>
+		<tr>
+			<td>SCORE</td>
+			<td>{{character.scores.abilities.STR.score}}</td>
+			<td>{{character.scores.abilities.CON.score}}</td>
+			<td>{{character.scores.abilities.DEX.score}}</td>
+			<td>{{character.scores.abilities.INT.score}}</td>
+			<td>{{character.scores.abilities.WIS.score}}</td>
+			<td>{{character.scores.abilities.CHA.score}}</td>
+		</tr>		
+		<tr>
+			<td>MOD</td>
+			<td>{{character.scores.abilities.STR.mod}}</td>
+			<td>{{character.scores.abilities.CON.mod}}</td>
+			<td>{{character.scores.abilities.DEX.mod}}</td>
+			<td>{{character.scores.abilities.INT.mod}}</td>
+			<td>{{character.scores.abilities.WIS.mod}}</td>
+			<td>{{character.scores.abilities.CHA.mod}}</td>
+		</tr>		
+	</table>	
+
+	<table>
+		<tr>
+			<th>DEFENSE</th>
+			<th>AC</th>
+			<th>FORT</th>
+			<th>REF</th>						
+			<th>WILL</th>
+		</tr>
+		<tr>
+			<td>SCORE</td>
+			<td>{{character.scores.defenses.AC.score}}</td>
+			<td>{{character.scores.defenses.FORT.score}}</td>
+			<td>{{character.scores.defenses.REF.score}}</td>
+			<td>{{character.scores.defenses.WILL.score}}</td>
+		</tr>		
+		<tr>
+			<td>MOD</td>
+			<td>{{character.scores.defenses.AC.mod}}</td>
+			<td>{{character.scores.defenses.FORT.mod}}</td>
+			<td>{{character.scores.defenses.REF.mod}}</td>
+			<td>{{character.scores.defenses.WILL.mod}}</td>
+		</tr>		
+	</table>	
+
+	<table>
+		<tr>
+			<th>SKILL</th>
+			<th>Acrobatics</th>
+			<th>Arcana</th>
+			<th>Athletics</th>						
+			<th>Bluff</th>
+			<th>Diplomacy</th>
+			<th>Dungeoneering</th>
+			<th>Endurance</th>
+			<th>Heal</th>
+			<th>History</th>				
+		</tr>
+		<tr>
+			<td>MOD</td>
+			<td>{{character.scores.skills.Acrobatics.score}}</td>
+			<td>{{character.scores.skills.Arcana.score}}</td>
+			<td>{{character.scores.skills.Athletics.score}}</td>
+			<td>{{character.scores.skills.Bluff.score}}</td>
+			<td>{{character.scores.skills.Diplomacy.score}}</td>
+			<td>{{character.scores.skills.Dungeoneering.score}}</td>
+			<td>{{character.scores.skills.Endurance.score}}</td>
+			<td>{{character.scores.skills.Heal.score}}</td>
+			<td>{{character.scores.skills.History.score}}</td>			
+		</tr>		
+		<tr>
+			<th>SKILL</th>					
+			<th>Insight</th>
+			<th>Intimidate</th>
+			<th>Nature</th>
+			<th>Perception</th>
+			<th>Religion</th>
+			<th>Stealth</th>						
+			<th>Streetwise</th>
+			<th>Thievery</th>			
+		</tr>	
+		<tr>			
+			<td>MOD</td>
+			<td>{{character.scores.skills.Insight.score}}</td>
+			<td>{{character.scores.skills.Intimidate.score}}</td>
+			<td>{{character.scores.skills.Nature.score}}</td>
+			<td>{{character.scores.skills.Perception.score}}</td>
+			<td>{{character.scores.skills.Religion.score}}</td>
+			<td>{{character.scores.skills.Stealth.score}}</td>
+			<td>{{character.scores.skills.Streetwise.score}}</td>
+			<td>{{character.scores.skills.Thievery.score}}</td>
+		</tr>				
+	</table>	
+	<table>
+		<tr>
+			<th>WEAPONS</th>
+			{% for x in character.items %}
+				<td>x.name</td>
+			{% endfor %}
+		</tr>
+		<tr>
+			<th>POWERS</th>
+			{% for x in character.powers %}
+				<td>x.name</td>				
+			{% endfor %}
+		</tr>	
+	</table>	
+	<form class="items" action="/api/character/player/item/weapon/add">
+		<label><strong>ADD WEAPONS</strong></label><br />
+		<input type="hidden" name="player_id" value={{character.key.id}}>
+		{% for x in weapons %}
+		<input type="radio" name="weapon_name" value="{{x.key.name}}"><span>{{x.name}}</span>
+		{% endfor %}
+		<br /><br />
+    <input type="submit" value="Submit" />		
+	</form>
+	<form class="items" action="/api/character/player/power/attack/add">
+		<label><strong>ADD ATTACK POWERS</strong></label><br />
+		<input type="hidden" name="player_id" value={{character.key.id}}>
+		{% for x in powers %}
+			<input type="radio" name="attack_name" value="{{x.key.name}}"><span>{{x.name}}</span>		
+		{% endfor %}
+		<br /><br />
+    <input type="submit" value="Submit" />		
 	</form>	
 </div>	
-	
+
 {% endblock %}

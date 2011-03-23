@@ -8,6 +8,7 @@
 import models
 import rules
 import seed
+import utils
 
 from settings import *
 
@@ -92,12 +93,25 @@ class PowerAdmin(webapp.RequestHandler):
         generate(self, 'admin_power.html', template_values)   
 
 class CharacterAdmin(webapp.RequestHandler):
-    def get(self):
-        characters = models.PlayerCharacter.all().fetch(10)
-        template_values = {
-            'characters': characters
-        }        
-        generate(self, 'admin_character.html', template_values)                             
+    def get(self, method):
+        if method == "form":
+            characters = models.PlayerCharacter.all().fetch(10)
+            template_values = {
+                'characters': characters
+            }        
+            generate(self, 'admin_character_form.html', template_values) 
+        else:
+            i = utils.strToInt(method)
+            character = models.PlayerCharacter.get_by_id(i)    
+            weapons = models.Weapon.all().fetch(100)
+            powers = models.Power.all().fetch(100)                          
+            template_values = {
+                'character': character,
+                'weapons': weapons,
+                'powers': powers
+            }        
+            generate(self, 'admin_character.html', template_values)
+
         
 ######################## METHODS #############################################
 ##############################################################################
@@ -120,7 +134,7 @@ application = webapp.WSGIApplication([('/admin/', Admin),
                                       ('/admin/armor', ArmorAdmin),
                                       ('/admin/weapon', WeaponAdmin),
                                       ('/admin/power', PowerAdmin),
-                                      ('/admin/character', CharacterAdmin)],
+                                      (r'/admin/character/(.*)', CharacterAdmin)],
                                        debug=True)
 
 def main():

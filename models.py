@@ -33,7 +33,15 @@ ABILITY_MODIFIERS = {'1': -5, '2': -4, '3': -4, '4': -3, '5': -3, '6': -2,
                      '19': 4, '20': 5, '21': 5, '22': 6, '23': 6, '24': 7,
                      '25': 7, '26': 8, '27': 8}
                 
-ALIGNMENTS = ['Good', 'Lawful good', 'Unaligned', 'Evil', 'Chaotic Evil']                     
+ALIGNMENTS = ['Good', 'Lawful good', 'Unaligned', 'Evil', 'Chaotic Evil']  
+
+# Model names for convienence 
+PC = "PlayerCharacter"
+NPC = "NonPlayerCharacter"
+WPN = "Weapon"
+ARM = "Armor"
+ATT = "Attack"  
+UTL = "Utility"                
                      
 ############################# CUSTOM PROPERTIES ##############################
 ##############################################################################   

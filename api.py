@@ -58,9 +58,119 @@ class APIError(webapp.RequestHandler):
     def post(self, foo):
         r = API404
         return self.response.out.write(simplejson.dumps(r)) 
+        
+class APIPlayerItem(webapp.RequestHandler):
+    """Provides API access to Player Item data.  Responses are in JSON.
+    """
+    def get(self, type, method):
+        r = API404
+        return self.response.out.write(simplejson.dumps(r)) 
+
+    def post(self, model, method):
+        logging.info('################# APIPlayerItem:: post() #############')
+        if model == "weapon":
+            if method == "add":
+                player_id = self.request.get('player_id')
+                weapon_name = self.request.get('weapon_name')
+                
+                i = utils.strToInt(player_id)
+                player = models.Player.get_by_id(i)
+                weapon = models.Weapon.get_by_key_name(weapon_name)
+                player.items.append(weapon)
+                db.put(player)            
+        return self.response.out.write(simplejson.dumps(r)) 
+            
                
 ######################## METHODS #############################################
 ##############################################################################
+def getJSONPlayer(player):
+    json = {'name': player.name, 'level': player.level, 'race': player.race,
+            'alignment': player.alignment, 'size': player.size, 
+            'experience': player.experience, 'speed': player.speed, 
+            'hit_points': player.hit_points, 'cast': player.cast, 
+            'height': player.height, 'weight': player.weight, 
+            'scores': player.scores}
+            
+    # Construct JSON for Player Powers
+    powers = db.get(player.powers)
+    attacks = []
+    utilities = []
+    healing = [] 
+    for p in powers:
+        if p.class_name() == models.ATT:
+            j = getJSONPower(models.ATT, p)
+            attacks.append(j)   
+        elif p.class_name() == models.UTL:
+            j = getJSONPower(models.UTL, p)
+            utilities.append(j)
+        elif p.class_name() == models.HEL:
+            j = getJSONPower(models.HEL, p)
+            healing.append(j)
+                        
+    powers_json = {'attacks': attacks, 
+                   'utilities': utilities, 
+                   'healing': healing}
+    
+    # Construct JSON for Player Items
+    items = db.get(player.items)
+    weapons = []
+    armor = []
+    implements = []
+    gear = []                   
+    for i in items:  
+        if i.class_name() == models.WPN:
+            j = getJSONItem(models.WPN, i)
+            weapons.append(j)        
+        elif i.class_name() == models.ARM:      
+            j = getJSONItem(models.ARM, i)
+            armor.append(j)
+        elif i.class_name() == models.IMP:      
+            j = getJSONItem(models.IMP, i)
+            implements.append(j)
+        elif i.class_name() == models.GEA:      
+            j = getJSONItem(models.GEA, i)
+            gear.append(j)
+
+    items_json = {'weapons': weapons, 'armor': armor, 
+                  'implements': implements, 'gear': gear}
+                  
+    json['powers'] = powers_json 
+    json['items'] = items_json
+    return json
+
+def getJSONPower(model_name, model):
+    json = {'name': model.name, 'description': model.description, 
+            'recharge': model.recharge, 'level': model.level, 
+            'source_keyword': model.source_keyword, 'cast': model.cast
+            'effect_keyword': model.effect_keyword, 'mods': models.mods}
+    
+    # Construct JSON specific to the subclass        
+    if model_name == models.ATT:
+        json[''] = model.
+        json[''] = model.
+        json[''] = model.
+        json[''] = model.
+        json[''] = model.
+        json[''] = model.
+        json[''] = model.
+        json[''] = model.
+        json[''] = model.
+        json[''] = model.
+
+    elif model_name == models.UTL:
+        json[''] = model.
+        json[''] = model.        
+    elif model_name == models.HEL:
+        json[''] = model.
+        json[''] = model.
+
+def getJSONItem(model_name, model):
+
+    if model_name == models.WPN:
+    elif model_name == models.ARM:
+    elif model_name == models.IMP:
+    elif model_name == models.GEA:
+
 def createPlayer(self):
     """Creates a new Player Character and returns that character as a JSON
     Response.
@@ -189,10 +299,14 @@ def addMods(self, scores, *mods):
                     mod = mod['mod']
                     if scores[k][type_]['mods'] is None:
                         mods = []
-                        mods.append({'origin':origin, 'mod': mod, 'type': type_})
+                        mods.append({'origin':origin, 
+                                     'mod': mod, 
+                                     'type': type_})
                         scores[k][type_]['mods'] = mods
                     else:
-                        scores[k][type_]['mods'].append({'origin':origin, 'mod': mod, 'type': type_})
+                        scores[k][type_]['mods'].append({'origin':origin, 
+                                                         'mod': mod, 
+                                                         'type': type_})
                     total_mod = scores[k][type_]['mod']
                     logging.info('##### total_mod = '+str(total_mod)+' #####')  
                     logging.info('##### mod = '+str(mod)+' ##########')                                           
@@ -217,7 +331,7 @@ def setMod(scores, cat_key, keyword, mod):
     logging.info('######################## setMod() ########################')
     logging.info('######################## cat_key = '+cat_key+' ###########')    
     logging.info('######################## keyword = '+keyword+' ###########')    
-    logging.info('######################## mod = '+str(mod)+' ###########')        
+    logging.info('######################## mod = '+str(mod)+' ##############')        
     # If "mods" doesn't exist then create it ... 
     if scores[cat_key][keyword]['mods'] is None:
         mods = [mod]
@@ -241,8 +355,12 @@ def setScore(scores, cat_key, keyword, score):
                      
 ##############################################################################
 ##############################################################################
-application = webapp.WSGIApplication([(r'/api/character/player/(.*)', APIPlayer),
-                                      (r'/api/character/nonplayer/(.*)', APINonPlayer),
+application = webapp.WSGIApplication([(r'/api/character/player/(.*)', 
+                                       APIPlayer),
+                                      (r'/api/character/nonplayer/(.*)', 
+                                       APINonPlayer),
+                                      (r'/api/character/player/item/(.*)/(.*)'), 
+                                       APIPLayerItem),
                                       (r'/api/(.*)', APIError)
                                      ],
                                      debug=True)
