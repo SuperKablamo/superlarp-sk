@@ -75,7 +75,8 @@ def createPlayer(self):
     scores = buildDefenses(scores)
     # Update score data with Race and Cast bonuses ...
     race = models.Race.get_by_key_name(self.request.get('race'))
-    cast = models.Cast.get_by_key_name(self.request.get('cast'))    
+    cast = models.Cast.get_by_key_name(self.request.get('cast'))   
+    logging.info('###################### score = '+str(scores)+'############')     
     scores = addMods(self, scores, race.mods, cast.mods)
     hp = buildHitPoints(cast, scores)
     player = models.PlayerCharacter(name = self.request.get('name'),
@@ -180,7 +181,7 @@ def addMods(self, scores, *mods):
         logging.info('#################### m = '+str(m)+' ##################')
         for k in models.SCORE_KEYS: # Loop through categories in mod List ...
             logging.info('#################### k = '+str(k)+' ##############')
-            if m[k]: # If there are mods for that category ...
+            if k in m: # If there are mods for that category ...
                 for mod in m[k]: # Loop through those mods ...
                     logging.info('#################### mod = '+str(mod)+' ##')
                     origin = mod['origin']
@@ -193,8 +194,12 @@ def addMods(self, scores, *mods):
                     else:
                         scores[k][type_]['mods'].append({'origin':origin, 'mod': mod, 'type': type_})
                     total_mod = scores[k][type_]['mod']
+                    logging.info('##### total_mod = '+str(total_mod)+' #####')  
+                    logging.info('##### mod = '+str(mod)+' ##########')                                           
                     total_mod =+ mod
-                    scores[k][type_]['mod'] = total_mod                 
+                    logging.info('##### total_mod = '+str(total_mod)+' #####')                      
+                    scores[k][type_]['mod'] = total_mod      
+                    logging.info('# mod = '+str(scores[k][type_]['mod'])+' #')                                 
     
     return scores
 
@@ -213,14 +218,20 @@ def setMod(scores, cat_key, keyword, mod):
     logging.info('######################## cat_key = '+cat_key+' ###########')    
     logging.info('######################## keyword = '+keyword+' ###########')    
     logging.info('######################## mod = '+str(mod)+' ###########')        
-    try:
+    # If "mods" doesn't exist then create it ... 
+    if scores[cat_key][keyword]['mods'] is None:
         mods = [mod]
         scores[cat_key][keyword]['mods'] = mods
-    except AttributeError:
+    # Otherwise add to the existing List of mods ...    
+    else: 
         scores[cat_key][keyword]['mods'].append(mod)
     total_mod = scores[cat_key][keyword]['mod']
+    logging.info('##################### total_mod = '+str(total_mod)+' #####')   
     total_mod =+ mod['mod']
+    logging.info('##################### mod = '+str(mod['mod'])+' ##########')      
+    logging.info('##################### total_mod = '+str(total_mod)+' #####')   
     scores[cat_key][keyword]['mod'] = total_mod
+    logging.info('########### mods = '+str(scores[cat_key][keyword])+' #####')     
     return scores
     
 def setScore(scores, cat_key, keyword, score):          

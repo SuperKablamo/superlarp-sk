@@ -31,7 +31,7 @@ from google.appengine.ext.webapp.util import run_wsgi_app
 RACE_DATA = [
     {'name': 'Dwarf',
      'motto': 'Masters of stone and iron, dauntless and unyielding in the face of adversity.',
-     'ability_mods': [{'origin': 'Dwarf', 'type': 'CON', 'mod': 2}, {'origin': 'Dwarf', 'type': 'WIS', 'mod': 2}],    
+     'ability_bonuses': [{'origin': 'Dwarf', 'type': 'CON', 'mod': 2}, {'origin': 'Dwarf', 'type': 'WIS', 'mod': 2}],    
      'skill_mods': [{'origin': 'Dwarf', 'type': 'Dungeoneering', 'mod': 2}, {'origin': 'Dwarf', 'type': 'Endurance', 'mod': 2}],    
      'defense_mods': [],              
      'size': 'Medium',
@@ -42,7 +42,7 @@ RACE_DATA = [
      'max_weight': 220},
     {'name': 'Elf',
      'motto': 'Quick, wary archers who freely roam the forests and wilds.',
-     'ability_mods': [{'origin': 'Elf', 'type': 'DEX', 'mod': 2}, {'origin': 'Elf', 'type': 'WIS', 'mod': 2}],  
+     'ability_bonuses': [{'origin': 'Elf', 'type': 'DEX', 'mod': 2}, {'origin': 'Elf', 'type': 'WIS', 'mod': 2}],  
      'skill_mods': [{'origin': 'Elf', 'type': 'Nature', 'mod': 2}, {'origin': 'Elf', 'type': 'Perception', 'mod': 2}], 
      'defense_mods': [],               
      'size': 'Medium',
@@ -53,7 +53,7 @@ RACE_DATA = [
      'max_weight': 170},
     {'name' : 'Halfling',
      'motto': 'Quick and resourceful wanderers, small in stature but great in courage.',
-     'ability_mods': [{'origin': 'Halfling', 'type': 'DEX', 'mod': 2}, {'origin': 'Halfling', 'type': 'CHA', 'mod': 2}],   
+     'ability_bonuses': [{'origin': 'Halfling', 'type': 'DEX', 'mod': 2}, {'origin': 'Halfling', 'type': 'CHA', 'mod': 2}],   
      'skill_mods': [{'origin': 'Halfling', 'type': 'Acrobatics', 'mod': 2}, {'origin': 'Halfling', 'type': 'Thievery', 'mod': 2}], 
      'defense_mods': [],            
      'size': 'Small',
@@ -64,7 +64,7 @@ RACE_DATA = [
      'max_weight': 85},
     {'name': 'Human',
      'motto': 'Ambitious, driven, pragmatic - a race of heroes, and also a race of villians.',
-     'ability_mods': [{'origin': 'Human', 'type': 'CON', 'mod': 2}, {'origin': 'Human', 'type': 'INT', 'mod': 2}],
+     'ability_bonuses': [{'origin': 'Human', 'type': 'CON', 'mod': 2}, {'origin': 'Human', 'type': 'INT', 'mod': 2}],
      'skill_mods': [],  
      'defense_mods': [{'origin': 'Human', 'type': 'FORT', 'mod': 1}, {'origin': 'Human', 'type': 'REF', 'mod': 1}, {'origin': 'Human', 'type': 'WILL', 'mod': 1}],           
      'size': 'Medium',
@@ -758,16 +758,17 @@ def seedRaces():
         abilities = []
         skills = []
         defenses = []
-        for a in x['ability_mods']:
+        for a in x['ability_bonuses']:
             abilities.append(a)
         for a in x['skill_mods']:
             skills.append(a)            
         for a in x['defense_mods']:
             defenses.append(a)            
-        mods = {models.ABILITIES_KEY: abilities,
-                   models.SKILLS_KEY: skills,
-                   models.DEFENSES_KEY: defenses}
-                               
+        mods = {
+                models.SKILLS_KEY: skills,
+                models.DEFENSES_KEY: defenses}
+        bonuses = {models.ABILITIES_KEY: abilities}  
+                             
         race = models.Race(key_name = x['name'],
                            name = x['name'],
                            motto = x['motto'],
@@ -777,7 +778,8 @@ def seedRaces():
                            max_height = x['max_height'],
                            min_weight = x['min_weight'],                           
                            max_weight = x['max_weight'],
-                           mods = mods)
+                           mods = mods,
+                           bonuses = bonuses)
         races.append(race)
     
     db.put(races)                         
