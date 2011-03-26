@@ -53,7 +53,9 @@ class InitAdmin(webapp.RequestHandler):
         elif method == "attacks": 
             r = seed.seedAttacks()                        
         elif method == "bonuses": 
-            r = seed.seedBonuses()            
+            r = seed.seedBonuses()
+        elif method == "npcs": 
+            r = seed.seedNPCs()                        
         #else: r = API404
         #return self.response.out.write(simplejson.dumps(r))
 

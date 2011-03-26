@@ -745,6 +745,395 @@ ATTACK_DATA = [
      'damage_dice': 2,
      'damage_weapon_multiplier': None,     
      'damage_ability_mod': 'INT'}]
+     
+NPC_DATA = [
+    {'name': 'Kobold Minion',
+     'level': 1,
+     'race': 'Kobold',
+     'alignment': 'Evil',
+     'size': 'Small',
+     'experience': 25,
+     'speed': 6,
+     'items': [],
+     'actions': {'weapons': [{
+                    'name': 'Javelin',
+                    'attack_mod': 5,
+                    'defense_ability': 'AC',
+                    'damage_dice': 1,
+                    'damage_die': 4,
+                    'damage_mod': 0,
+                    'damage_keywords': [],
+                    'category': 'Simple Melee',
+                    'short_range': 0,
+                    'long_range': 0,
+                    'magic': False
+                    }],
+                'powers': [],
+                'heal': []
+                },
+     'hit_points': {'hp': 1},
+     'scores': {'abilities': {
+                    'STR': {'score': 8, 'mod': -1}, 
+                    'CON': {'score': 12, 'mod': 1}, 
+                    'DEX': {'score': 16, 'mod': 3}, 
+                    'INT': {'score': 9, 'mod': -1}, 
+                    'WIS': {'score': 12, 'mod': 1}, 
+                    'CHA': {'score': 10, 'mod': 0}},
+                'defenses': {
+                    'AC': {'score': 15},
+                    'FORT': {'score': 11},
+                    'REF': {'score': 13},
+                    'WILL': {'score': 11}}
+                },      
+     'description': 'Kobolds are short, reptilian humanoids with cowardly and sadistic tendencies.  A kobold\'s scaly skin ranges from dark rusty brown to a rusty black color. It has glowing red eyes. Its tail is nonprehensile. Kobolds wear ragged clothing, favoring red and orange. A kobold is 2 to 2.5 feet tall and weighs 35 to 45 pounds. Kobolds speak Draconic with a voice that sounds like that of a yapping dog.',             
+     'origin': 'Natural',
+     'category': 'Humanoid',
+     'languages': ['Common', 'Draconic'],
+     'keywords': []},
+    {'name': 'Kobold Skirmisher',
+     'level': 1,
+     'race': 'Kobold',
+     'alignment': 'Evil',
+     'size': 'Small',
+     'experience': 100,
+     'speed': 6,
+     'actions': {'weapons': [{
+                    'name': 'Spear',
+                    'attack_mod': 6,
+                    'defense_ability': 'AC',
+                    'damage_dice': 1,
+                    'damage_die': 8,
+                    'damage_mod': 0,
+                    'damage_keywords': [],
+                    'category': 'Simple Melee',
+                    'short_range': 0,
+                    'long_range': 0,
+                    'magic': False
+                    }],
+                'powers': [],
+                'heal': []
+                },     
+     'hit_points': {'hp': 27},
+     'scores': {'abilities': {
+                    'STR': {'score': 8, 'mod': -1}, 
+                    'CON': {'score': 11, 'mod': 0}, 
+                    'DEX': {'score': 16, 'mod': 3}, 
+                    'INT': {'score': 6, 'mod': -2}, 
+                    'WIS': {'score': 10, 'mod': 0}, 
+                    'CHA': {'score': 15, 'mod': 2}
+                    },
+                'defenses': {
+                    'AC': {'score': 15},
+                    'FORT': {'score': 11},
+                    'REF': {'score': 14},
+                    'WILL': {'score': 13}
+                    }
+                },   
+     'description': 'Kobolds are short, reptilian humanoids with cowardly and sadistic tendencies.  A kobold\'s scaly skin ranges from dark rusty brown to a rusty black color. It has glowing red eyes. Its tail is nonprehensile. Kobolds wear ragged clothing, favoring red and orange. A kobold is 2 to 2.5 feet tall and weighs 35 to 45 pounds. Kobolds speak Draconic with a voice that sounds like that of a yapping dog.',             
+     'origin': 'Natural',
+     'category': 'Humanoid',
+     'languages': ['Common', 'Draconic'],
+     'keywords': []},
+    {'name': 'Bugbear Warrior',
+     'level': 5,
+     'race': 'Goblin',
+     'alignment': 'Evil',
+     'size': 'Medium',
+     'experience': 200,
+     'speed': 6,
+     'actions': {'weapons': [{
+                    'name': 'Morningstar',
+                    'attack_mod': 7,
+                    'defense_ability': 'AC',
+                    'damage_dice': 1,
+                    'damage_die': 12,
+                    'damage_mod': 6,
+                    'damage_keywords': [],
+                    'category': 'Simple Melee',
+                    'short_range': 0,
+                    'long_range': 0,
+                    'magic': False
+                    }],
+                'powers': [{
+                    'name': 'Skullthumper',
+                    'recharge': 3600,
+                    'source_keyword': 'Martial',
+                    'accessory_keyword': 'Weapon',
+                    'damage_keywords': [],     
+                    'effect_keyword': None,
+                    'attack_range': 0,
+                    'max_targets': 1,
+                    'max_attacks': 1,
+                    'attack_mod': 5,
+                    'defense_ability': 'FORT',
+                    'damage_dice': 1,  
+                    'damage_die': 12,   
+                    'damage_mod': 6
+                    }],
+                'heal': []
+                },
+     'hit_points': {'hp': 76},
+     'scores': {'abilities': {
+                    'STR': {'score': 20, 'mod': 7}, 
+                    'CON': {'score': 16, 'mod': 5}, 
+                    'DEX': {'score': 16, 'mod': 5}, 
+                    'INT': {'score': 10, 'mod': 2}, 
+                    'WIS': {'score': 14, 'mod': 4}, 
+                    'CHA': {'score': 10, 'mod': 2}
+                    },
+                'defenses': {
+                    'AC': {'score': 18},
+                    'FORT': {'score': 17},
+                    'REF': {'score': 15},
+                    'WILL': {'score': 14}
+                    }
+                },   
+     'description': 'Bugbears are big, tough Goblins.',             
+     'origin': 'Natural',
+     'category': 'Humanoid',
+     'languages': ['Common', 'Goblin'],
+     'keywords': []},
+    {'name': 'Goblin Minion',
+     'level': 1,
+     'race': 'Goblin',
+     'alignment': 'Evil',
+     'size': 'Small',
+     'experience': 25,
+     'speed': 6,
+     'actions': {'weapons': [{
+                    'name': 'Short Sword',
+                    'attack_mod': 5,
+                    'defense_ability': 'AC',
+                    'damage_dice': 1,
+                    'damage_die': 4,
+                    'damage_mod': 0,
+                    'damage_keywords': [],
+                    'category': 'Simple Melee',
+                    'short_range': 0,
+                    'long_range': 0,
+                    'magic': False
+                    }],
+                'powers': [],
+                'heal': []
+                },
+     'hit_points': {'hp': 1},
+     'scores': {'abilities': {
+                    'STR': {'score': 14, 'mod': 2}, 
+                    'CON': {'score': 13, 'mod': 1}, 
+                    'DEX': {'score': 17, 'mod': 3}, 
+                    'INT': {'score': 8, 'mod': -1}, 
+                    'WIS': {'score': 12, 'mod': 1}, 
+                    'CHA': {'score': 8, 'mod': -1}
+                    },
+                'defenses': {
+                    'AC': {'score': 16},
+                    'FORT': {'score': 12},
+                    'REF': {'score': 14},
+                    'WILL': {'score': 11}
+                    }
+                },   
+     'description': 'A goblin stands 3 to 3.5 feet tall and weigh 40 to 45 pounds. Its eyes are usually dull and glazed, varying in color from red to yellow. A goblin\'s skin color ranges from yellow through any shade of orange to a deep red; usually all members of a single tribe are about the same color. Goblins wear clothing of dark leather, tending toward drab, soiled-looking colors. Goblins speak Goblin; those with Intelligence scores of 12 or higher also speak Common.',             
+     'origin': 'Natural',
+     'category': 'Humanoid',
+     'languages': ['Common', 'Goblin'],
+     'keywords': []},
+    {'name': 'Hill Giant',
+     'level': 13,
+     'race': 'Giant',
+     'alignment': 'Chaotic Evil',
+     'size': 'Large',
+     'experience': 800,
+     'speed': 8,
+     'actions': {'weapons': [{
+                    'name': 'Greatclub',
+                    'attack_mod': 15,
+                    'defense_ability': 'AC',
+                    'damage_dice': 1,
+                    'damage_die': 10,
+                    'damage_mod': 5,
+                    'damage_keywords': [],
+                    'category': 'Simple Melee',
+                    'short_range': 0,
+                    'long_range': 0,
+                    'magic': False},
+                    {
+                    'name': 'Rock',
+                    'attack_mod': 15,
+                    'defense_ability': 'AC',
+                    'damage_dice': 2,
+                    'damage_die': 6,
+                    'damage_mod': 5,
+                    'damage_keywords': [],
+                    'category': 'Improvised Melee',
+                    'short_range': 30,
+                    'long_range': 60,
+                    'magic': False
+                    }],
+                'powers': [{
+                    'name': 'Sweeping Club',
+                    'recharge': 3600,
+                    'source_keyword': 'Martial',
+                    'accessory_keyword': 'Weapon',
+                    'damage_keywords': [],     
+                    'effect_keyword': None,
+                    'attack_range': 0,
+                    'max_targets': 2,
+                    'max_attacks': 1,
+                    'attack_mod': 15,
+                    'defense_ability': 'AC',
+                    'damage_dice': 1,  
+                    'damage_die': 10,   
+                    'damage_mod': 5
+                    }],
+                'heal': []    
+                },
+     'hit_points': {'hp': 159},
+     'scores': {'abilities': {
+                    'STR': {'score': 21, 'mod': 11}, 
+                    'CON': {'score': 19, 'mod': 10}, 
+                    'DEX': {'score': 8, 'mod': 5}, 
+                    'INT': {'score': 7, 'mod': 4}, 
+                    'WIS': {'score': 12, 'mod': 7}, 
+                    'CHA': {'score': 9, 'mod': 5}
+                    },
+                 'defenses': {
+                    'AC': {'score': 25},
+                    'FORT': {'score': 27},
+                    'REF': {'score': 21},
+                    'WILL': {'score': 23}
+                    }
+                 },   
+     'description': 'Skin color among hill giants ranges from light tan to deep ruddy brown. Their hair is brown or black, with eyes the same color. Hill giants wear layers of crudely prepared hides with the fur left on. They seldom wash or repair their garments, preferring to simply add more hides as their old ones wear out. Adults are about 10.5 feet tall and weigh about 1,100 pounds. Hill giants can live to be 200 years old.',             
+     'origin': 'Natural',
+     'category': 'Humanoid',
+     'languages': ['Giant'],     
+     'keywords': ['Giant']},
+    {'name': 'Skeleton Minion',
+     'level': 1,
+     'race': 'Skeleton',
+     'alignment': 'Unaligned',
+     'size': 'Medium',
+     'experience': 25,
+     'speed': 6,
+     'actions': {'weapons': [{
+                    'name': 'Longsword',
+                    'attack_mod': 6,
+                    'defense_ability': 'AC',
+                    'damage_dice': 1,
+                    'damage_die': 4,
+                    'damage_mod': 0,
+                    'damage_keywords': [],
+                    'category': 'Military Melee',
+                    'short_range': 0,
+                    'long_range': 0,
+                    'magic': False},
+                    {
+                    'name': 'Shortbow',
+                    'attack_mod': 6,
+                    'defense_ability': 'AC',
+                    'damage_dice': 1,
+                    'damage_die': 4,
+                    'damage_mod': 0,
+                    'damage_keywords': [],
+                    'category': 'Military Ranged',
+                    'short_range': 30,
+                    'long_range': 60,
+                    'magic': False}],
+                 'powers': [],
+                 'heal': []
+                  },
+      'hit_points': {'hp': 1},
+      'scores': {'abilities': {
+                    'STR': {'score': 15, 'mod': 2}, 
+                    'CON': {'score': 13, 'mod': 1}, 
+                    'DEX': {'score': 17, 'mod': 3}, 
+                    'INT': {'score': 3, 'mod': -4}, 
+                    'WIS': {'score': 14, 'mod': 2}, 
+                    'CHA': {'score': 3, 'mod': -4}
+                    },
+                'defenses': {
+                     'AC': {'score': 16},
+                     'FORT': {'score': 13},
+                     'REF': {'score': 14},
+                     'WILL': {'score': 13}
+                     }
+                },   
+      'description': 'Skeletons are the animated bones of the dead, mindless automatons that obey the orders of their evil masters.  A skeleton is seldom garbed in anything more than the rotting remnants of any clothing or armor it was wearing when slain.  A skeleton does only what it is ordered to do.  It can draw no conclusions of its own and takes no initiative.  Because of this limitation, its instructions must always be simple.  A skeleton attacks until destroyed.',             
+      'origin': 'Natural',
+      'category': 'Animate',
+      'languages': [],     
+      'keywords': ['Undead']},
+     {'name': 'Adult Red Dragon',
+      'level': 15,
+      'race': 'Dragon',
+      'alignment': 'Evil',
+      'size': 'Large',
+      'experience': 6000,
+      'speed': 8,
+      'actions': {'weapons': [{
+                    'name': 'Bite',
+                    'attack_mod': 22,
+                    'defense_ability': 'AC',
+                    'damage_dice': 5,
+                    'damage_die': 6,
+                    'damage_mod': 7,
+                    'damage_keywords': ['Fire'],
+                    'category': 'Unarmed Melee',
+                    'short_range': 0,
+                    'long_range': 0,
+                    'magic': False},
+                    {
+                    'name': 'Claw',
+                    'attack_mod': 22,
+                    'defense_ability': 'AC',
+                    'damage_dice': 2,
+                    'damage_die': 8,
+                    'damage_mod': 7,
+                    'damage_keywords': ['Fire'],
+                    'category': 'Unarmed Melee',
+                    'short_range': 0,
+                    'long_range': 0,
+                    'magic': False}],
+                'powers': [{
+                    'name': 'Breath of Fire',
+                    'recharge': 3600,
+                    'source_keyword': 'Arcane',
+                    'accessory_keyword': None,
+                    'damage_keywords': ['Fire'],     
+                    'effect_keyword': None,
+                    'attack_range': 30,
+                    'max_targets': 5,
+                    'max_attacks': 1,
+                    'attack_mod': 20,
+                    'defense_ability': 'REF',
+                    'damage_dice': 2,  
+                    'damage_die': 12,   
+                    'damage_mod': 6                   
+                }],
+                'heal': []
+                },
+       'hit_points': {'hp': 1},
+       'scores': {'abilities': {
+                     'STR': {'score': 15, 'mod': 2}, 
+                     'CON': {'score': 13, 'mod': 1}, 
+                     'DEX': {'score': 17, 'mod': 3}, 
+                     'INT': {'score': 3, 'mod': -4}, 
+                     'WIS': {'score': 14, 'mod': 2}, 
+                     'CHA': {'score': 3, 'mod': -4}
+                     },
+                  'defenses': {
+                     'AC': {'score': 16},
+                     'FORT': {'score': 13},
+                     'REF': {'score': 14},
+                     'WILL': {'score': 13}
+                     }
+                  },   
+       'description': 'The small scales of a wyrmling red dragon are a bright glossy scarlet, making the dragon easily spotted by predators and hunters, so it stays underground and does not venture outside until it is more able to take care of itself. Toward the end of young age, the scales turn a deeper red, and the glossy texture is replaced by a smooth, dull finish. As the dragon grows older, the scales become large, thick, and as strong as metal. The neck frill and wings are an ash blue or purple-gray toward the edges, becoming darker with age. The pupils of a red dragon fade as it ages; the oldest red dragons have eyes that resemble molten lava orbs.',             
+       'origin': 'Natural',
+       'category': 'Magical Beast',
+       'languages': ['Common', 'Draconic'],     
+       'keywords': ['Dragon']},       
+    ]     
     
 ######################## METHODS #############################################
 ##############################################################################
@@ -825,6 +1214,44 @@ def seedCasts():
     
     db.put(casts)                         
     return
+    
+def seedNPCs():
+    """Primes the datastore with Monsters.  Rawwwr!!
+    """
+    logging.info('###################### seedWeapons() #####################')    
+    npcs = []
+    for x in NPC_DATA:
+        logging.info('################## x = '+str(x)+' ####################') 
+        languages = []
+        keywords = []
+        items = []
+        artifacts = []
+        for a in x['languages']:
+            languages.append(a)
+        for a in x['keywords']:
+            keywords.append(a)    
+        
+        npc = models.NonPlayerCharacter(name = x['name'],
+                                        level = x['level'],
+                                        race = x['race'],
+                                        alignment = x['alignment'],
+                                        size = x['size'],
+                                        experience = x['experience'],
+                                        speed = x['speed'],
+                                        items = items,
+                                        actions = x['actions'],
+                                        hit_points = x['hit_points'],
+                                        scores = x['scores'],
+                                        description = x['description'],
+                                        origin = x['origin'],
+                                        category = x['category'],
+                                        languages = languages,
+                                        keywords = keywords,
+                                        artifacts = artifacts)
+        
+        npcs.append(npc)
+    db.put(npcs)
+    return                                    
     
 def seedWeapons():
     """Primes the datastore with Weapons data.

@@ -41,6 +41,9 @@ NPC = "NonPlayerCharacter"
 WPN = "Weapon"
 ARM = "Armor"
 IMP = "Implement"
+POT = "Potion"
+RIN = "Ring"
+ART = "Artifact"
 GEA = "Gear"
 ATT = "Attack"  
 UTL = "Utility"   
@@ -83,23 +86,27 @@ class Character(polymodel.PolyModel):
     size = db.StringProperty(required=True)
     experience = db.IntegerProperty(required=True, default=0)
     speed = db.IntegerProperty(required=True)
-    powers = db.ListProperty(db.Key, required=True, default=None)
     items = db.ListProperty(db.Key, required=True, default=None)
-    equipped = db.ListProperty(db.Key, required=True, default=None)
     hit_points = JSONProperty(required=True) # {"hp": 10, "surge": 2, "recharge": 10800}
     scores = JSONProperty(required=True)  #  {"abilities": {"STR": {"score": 10, "mod": 1, "mods": [{"origin": "Singing Sword", "mod": 1}, {"origin": "Dwarf", "mod": 1}]}}, "skills": {"Acrobatics": {"score": 10, "mod": 1, "mods": [{"origin": "trained", "mod": 5}, {"origin": "DEX", "mod": 1}]}}}
-       
+    languages = db.StringListProperty(required=True, default=None)  
         
 class PlayerCharacter(Character):
     cast = db.StringProperty(required=True)
     height = db.IntegerProperty(required=True)
     weight = db.IntegerProperty(required=True)
+    powers = db.ListProperty(db.Key, required=True, default=None)
+    equipped = db.ListProperty(db.Key, required=True, default=None)
+    purse = JSONProperty(required=True) # {"copper": 800, "silver": 500, "gold": 90, "platinum": 4, "gems": 86}
     
 class NonPlayerCharacter(Character):    
+    description = db.TextProperty(required=True)
     origin = db.StringProperty(required=True)
     category = db.StringProperty(required=True)
-    keywords = db.StringListProperty(required=True, default=None)    
-    treasure = db.ReferenceProperty(required=True)
+    keywords = db.StringListProperty(required=True, default=None) 
+    actions = db.JSONProperty(required=True, default=None)      
+    artifacts = db.StringListProperty(required=True, default=None) 
+    
 ##############################################################################
     
 class Skills(db.Model):
@@ -205,6 +212,15 @@ class Armor(Item):
     armor_mod = db.IntegerProperty(required=True) # Modifier to armor
     check_mod = db.IntegerProperty(required=True) # Modifier to skill checks
     speed_mod = db.IntegerProperty(required=True) # Modifier to speed
+
+class Potion(Item):
+    foo = db.StringProperty(required=False)     
+
+class Artifact(Item):
+    foo = db.StringProperty(required=False)         
+    
+class Ring(Item):
+    foo = db.StringProperty(required=False)                  
     
 class Implement(Item):
     category = db.StringProperty(required=True) # Staff, Rod, Orb ...   
@@ -249,8 +265,3 @@ class Race(db.Model):
     languages = db.StringListProperty(required=True, default=None)  
     mods = JSONProperty(required=True) # {"skills": [{'origin': 'Human', 'type': "Dungeoneering", 'mod': 2}, {'origin': 'Human', 'type': Endurance", 'mod': 2}], "defenses": []}      
     bonuses = JSONProperty(required=True) # {"abilities": [{'origin': 'Human', 'type': "CON", 'mod': 2}, {'origin': 'Human', 'type': "WIS", 'mod': 2}]}
-
-class Treasure(db.Model):
-    level = db.IntegerProperty(required=True, default=1) # Level requirement           
-    items = db.ListProperty(db.Key, required=True, default=None)          
-    gold = db.IntegerProperty(required=True)

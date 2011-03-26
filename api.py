@@ -20,6 +20,15 @@ from google.appengine.ext import db
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp.util import run_wsgi_app
 
+############################# CODES ##########################################
+##############################################################################
+
+API200 = {"status": "200 OK", "code": "/api/status/ok"}
+API403 = {"status": "403 Forbidden", "code": "/api/status/error"}
+API404 = {"status": "404 Not Found", "code": "/api/status/error"}
+API500 = {"status": "500 Internal Server Error", "code": "/api/status/error"}
+MSG = 'message'
+
 ############################# REQUEST HANDLERS ############################### 
 ##############################################################################
 class APIPlayer(webapp.RequestHandler):
@@ -34,9 +43,11 @@ class APIPlayer(webapp.RequestHandler):
         
     def post(self, method):
         logging.info('################## APIPlayer:: post() ################')
-        if method == "new": 
+        if method == 'new': 
             r = createPlayer(self)
-        else: r = API404
+        else: 
+            r = API404
+            r[MSG] = 'New Player was not created.'
         return self.response.out.write(simplejson.dumps(r)) 
 
 class APINonPlayer(webapp.RequestHandler):
@@ -47,7 +58,7 @@ class APINonPlayer(webapp.RequestHandler):
     
     def post(self, method):
         logging.info('################## APINonPlayer:: post() #############')
-        if method == "new": 
+        if method == 'new': 
             r = createNonPlayer(self)
         else: r = API404
         return self.response.out.write(simplejson.dumps(r))
@@ -78,7 +89,10 @@ class APIPlayerItem(webapp.RequestHandler):
                 player_id = self.request.get('player_id')
                 name = self.request.get('weapon_name')
                 player = addToPlayer(models.Weapon, name, player_id)
-                r =  getJSONPlayer(player)         
+                if player is not None:
+                    r =  getJSONPlayer(player)  
+                else:
+                    r[MSG] = 'Item was not added to Player.'                       
         return self.response.out.write(simplejson.dumps(r))   
 
 class APIPlayerPower(webapp.RequestHandler):
@@ -96,7 +110,10 @@ class APIPlayerPower(webapp.RequestHandler):
                 player_id = self.request.get('player_id')
                 name = self.request.get('attack_name')
                 player = addToPlayer(models.Attack, name, player_id)
-                r =  getJSONPlayer(player)         
+                if player is not None:
+                    r =  getJSONPlayer(player) 
+                else:
+                    r['message'] = 'Power was not added to Player.'             
         return self.response.out.write(simplejson.dumps(r)) 
             
                
@@ -133,7 +150,10 @@ def getJSONPlayer(player):
     weapons = []
     armor = []
     implements = []
-    gear = []                   
+    gear = []   
+    potions = [] 
+    artifacts =[]
+    rings = []               
     for i in items:  
         if i.class_name() == models.WPN:
             weapons.append(i.json)        
@@ -143,9 +163,16 @@ def getJSONPlayer(player):
             implements.append(i.json)
         elif i.class_name() == models.GEA:      
             gear.append(i.json)
+        elif i.class_name() == models.POT:      
+            potions.append(i.json)
+        elif i.class_name() == models.RIN:      
+            rings.append(i.json)
+        elif i.class_name() == models.ART:      
+            artifacts.potions.append(i.json)
 
-    items_json = {'weapons': weapons, 'armor': armor, 
-                  'implements': implements, 'gear': gear}
+    items_json = {'weapons': weapons, 'armor': armor, 'potions': potions,
+                  'implements': implements, 'gear': gear, 'rings': rings,
+                  'artifacts': artifacts}
                   
     json['powers'] = powers_json 
     json['items'] = items_json
@@ -164,12 +191,11 @@ def addToPlayer(model_type, object_name, player_id):
     # Determine whether this is object is a subclass of Item or Power
     if name in (models.WPN, models.ARM, models.IMP, models.GEA): 
         player.items.append(object_.key())
-        logging.info('########## object_.key() = '+str(object_.key())+' ####')        
     elif name in (models.ATT, models.UTL, models.HEL):
         player.powers.append(object_.key())
-        logging.info('########## object_.key() = '+str(object_.key())+' ####')  
     else:
-        logging.info('########## NO MATCH FOUND for '+object_name+' ########')    
+        logging.info('########## NO MATCH FOUND for '+object_name+' ########')
+        return None    
     db.put(player)  
     return player
 
