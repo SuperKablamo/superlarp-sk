@@ -1,10 +1,15 @@
-#
-# Copyright 2010 SuperKablamo, LLC
+# ============================================================================
+# Copyright (c) 2011, SuperKablamo, LLC.
+# All rights reserved.
 # info@superkablamo.com
 #
+#
+#
+# ============================================================================
 
 ############################# SK IMPORTS #####################################
 ############################################################################## 
+import loot
 
 from settings import *
 
@@ -16,24 +21,17 @@ from random import randrange
 
 ######################## METHODS #############################################
 ##############################################################################
-def roll(sides=20, number=1):
-    """Returns the result of a die/dice roll.
-    """
-    return sum(randrange(sides)+1 for die in range(number))
     
 def rollLoot(level=1): 
-    """Returns a randomly generated, level appropriate treasure package as a 
-    JSON Result.
-    """   
-    r = roll(100, 1)
-    
-    
-    
-    return loot
+    """Returns a randomly generated, level appropriate treasure package.  
+    Result is a dictionary: {} 
 
+    """   
+    return loot.loot(level)    
+    
 def rollAttack(attacker, defender, weapon):
     """Resolves an attack and returns the damage result as a dictionary:
-    {'damage': 10, type: 'Fire'}.
+    {'damage': 10, type: 'Fire'}
     """    
     
     return damage

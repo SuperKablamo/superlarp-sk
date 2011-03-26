@@ -1,7 +1,11 @@
-#
-# Copyright 2010 SuperKablamo, LLC
+# ============================================================================
+# Copyright (c) 2011, SuperKablamo, LLC.
+# All rights reserved.
 # info@superkablamo.com
 #
+#
+#
+# ============================================================================
 
 import logging
 
@@ -104,7 +108,7 @@ class NonPlayerCharacter(Character):
     origin = db.StringProperty(required=True)
     category = db.StringProperty(required=True)
     keywords = db.StringListProperty(required=True, default=None) 
-    actions = db.JSONProperty(required=True, default=None)      
+    actions = JSONProperty(required=True, default=None)      
     artifacts = db.StringListProperty(required=True, default=None) 
     
 ##############################################################################

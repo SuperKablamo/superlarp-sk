@@ -1,7 +1,11 @@
-#
-# Copyright 2010 SuperKablamo, LLC
+# ============================================================================
+# Copyright (c) 2011, SuperKablamo, LLC.
+# All rights reserved.
 # info@superkablamo.com
 #
+#
+#
+# ============================================================================
 
 ############################# SK IMPORTS #####################################
 ############################################################################## 
@@ -394,6 +398,25 @@ application = webapp.WSGIApplication([(r'/api/character/player/item/(.*)/(.*)',
                                       (r'/api/(.*)', APIError)
                                      ],
                                      debug=True)
+
+'''
+api methods:
+checkin - update location, check for monsters
+create player
+add item to player (include cost)
+get loot - monster killed
+transfer item to other player
+attack monster
+attack player
+
+
+
+
+
+'''
+
+
+
 
 def main():
     run_wsgi_app(application)
