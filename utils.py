@@ -1,6 +1,13 @@
+# ============================================================================
+# Copyright (c) 2011, SuperKablamo, LLC.
+# All rights reserved.
+# info@superkablamo.com
 #
-# Copyright 2010 SuperKablamo, LLC
+# Utils.py defines the Methods for providing miscellaneous support for routine
+# tasks.
 #
+# ============================================================================
+
 import logging
 
 from google.appengine.ext import db

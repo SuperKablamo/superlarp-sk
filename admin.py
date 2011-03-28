@@ -1,7 +1,12 @@
-#
-# Copyright 2010 SuperKablamo, LLC
+# ============================================================================
+# Copyright (c) 2011, SuperKablamo, LLC.
+# All rights reserved.
 # info@superkablamo.com
 #
+# Admin.py defines the RequestHandlers and Methods for supporting admin level
+# access to the game.
+#
+# ============================================================================
 
 ############################# SK IMPORTS #####################################
 ############################################################################## 

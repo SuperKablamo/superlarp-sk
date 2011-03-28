@@ -3,7 +3,7 @@
 # All rights reserved.
 # info@superkablamo.com
 #
-#
+# Seed.py defines Data and Methods for seeding the Datastore with game data.
 #
 # ============================================================================
 

@@ -3,7 +3,8 @@
 # All rights reserved.
 # info@superkablamo.com
 #
-#
+# Loot.py defines the Data and Methods for providing treasure to the game
+# world.
 #
 # ============================================================================
 
@@ -15,23 +16,30 @@ from utils import roll
 ##############################################################################
 import logging
 
+from random import choice
+
 ######################## METHODS #############################################
 ##############################################################################
 def loot(level):
     """Creates random loot for a level.
+    {
+     'coins': {'coin': 'gp', 'amount': 100}, 
+     'gems': [{'gp': 100, 'type': 'Ruby'}, {'gp': 1000, 'type': 'Diamond'}],
+     'item': item.json
+    }
     """
     logging.info('METHOD:: loot()')
     treasure = TREASURE[level]
-    loot = {'coins': None, 'gems': None, 'items': None}
+    loot = {'coins': None, 'gems': None, 'item': None}
     
     # Coins
-    r = roll(100, 1)
-    logging.info('VALUE:: r = '+str(r))
+    coins_roll = roll(100, 1)
+    logging.info('VALUE:: coins_roll = '+str(coins_roll))
     coins = treasure['coins']
     for x in coins:
         range_ = x['range']
-        logging.info('VALUE:: range_ = '+str(range_))
-        if r <= range_:
+        logging.info('VALUE:: coin range_ = '+str(range_))
+        if coins_roll <= range_:
             dice = x['dice']
             die = x['die']
             if dice > 0:
@@ -42,9 +50,67 @@ def loot(level):
                 loot['coins'] = {'coin': coin, 'amount': amount}
     
     # Gems
-    
-    # Items
-    
+    gems_roll = roll(100, 1)
+    logging.info('VALUE:: gems_roll = '+str(gems_roll))
+    gems = treasure['gems']
+    for x in gems:   
+        range_ = x['range']
+        logging.info('VALUE:: gem range_ = '+str(range_))   
+        if gems_roll <= range_:
+            dice = x['dice']
+            die = x['die']
+            if dice > 0:
+                number_of_gems = roll(die, dice)
+                gems = []
+                for i in number_of_gems:
+                    gem_type_roll = roll(100, 1)
+                    for g in GEMS:
+                        range_ = g['range']
+                        if gem_type_roll <= range_:
+                            gem_value = roll(g['dice'], g['die'])
+                            gem_value = gem_value*g['base']
+                            gem_type = choice(g['gem'])
+                            gem = {'gp': gem_value, 'type': gem_type}
+                            gems.append(gem)
+                
+                loot['gems'] = gems
+                           
+    # Item
+    items_roll = roll(100, 1)
+    logging.info('VALUE:: items_roll = '+str(items_roll))
+    items = treasure['items']
+    for x in items:       
+        range_ = x['range']
+        logging.info('VALUE:: items range_ = '+str(range_))   
+        if items_roll <= range_:    
+            dice = x['dice']
+            die = x['die']
+            if dice > 0:
+                item_level_mod = roll(die, dice)
+                item_level = item_level_mod + level - 1
+                item_class_roll = roll(100, 1)
+                item_class = None
+                if item_class_roll <= 30:
+                    item_class = models.Weapon
+                elif item_class_roll <= 50:
+                    item_class = models.Armor                                        
+                elif item_class_roll <= 80:
+                    item_class = models.Potion
+                elif item_class_roll <= 90:
+                    item_class = models.Implement                 
+                elif item_class_roll <= 95:
+                    item_class = models.Gear
+                elif item_class_roll <= 99:
+                    item_class = models.Artifact                                                            
+                elif item_class_roll <= 100:
+                    item_class = models.Ring
+                
+                query = item_class.all()
+                query.filter('level =', item_level)
+                item_choices = query.fetch(1000)
+                random_item = choice(item_choices)
+                loot['item'] = random_item.json
+                                    
     return loot            
 
 

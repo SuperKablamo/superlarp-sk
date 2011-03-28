@@ -3,7 +3,8 @@
 # All rights reserved.
 # info@superkablamo.com
 #
-#
+# API.py defines the RequestHandlers and Methods for the API.  See the Wiki
+# on GitHub for how to use the API.
 #
 # ============================================================================
 

@@ -3,10 +3,12 @@
 # All rights reserved.
 # info@superkablamo.com
 #
-#
+# Models.py defines the Data and Models for the game world.
 #
 # ============================================================================
 
+############################# GAE IMPORTS ####################################
+##############################################################################
 import logging
 
 from django.utils import simplejson
@@ -93,7 +95,8 @@ class Character(polymodel.PolyModel):
     items = db.ListProperty(db.Key, required=True, default=None)
     hit_points = JSONProperty(required=True) # {"hp": 10, "surge": 2, "recharge": 10800}
     scores = JSONProperty(required=True)  #  {"abilities": {"STR": {"score": 10, "mod": 1, "mods": [{"origin": "Singing Sword", "mod": 1}, {"origin": "Dwarf", "mod": 1}]}}, "skills": {"Acrobatics": {"score": 10, "mod": 1, "mods": [{"origin": "trained", "mod": 5}, {"origin": "DEX", "mod": 1}]}}}
-    languages = db.StringListProperty(required=True, default=None)  
+    languages = db.StringListProperty(required=True, default=None) 
+    location = db.ReferenceProperty(required=False) 
         
 class PlayerCharacter(Character):
     cast = db.StringProperty(required=True)
@@ -269,3 +272,31 @@ class Race(db.Model):
     languages = db.StringListProperty(required=True, default=None)  
     mods = JSONProperty(required=True) # {"skills": [{'origin': 'Human', 'type': "Dungeoneering", 'mod': 2}, {'origin': 'Human', 'type': Endurance", 'mod': 2}], "defenses": []}      
     bonuses = JSONProperty(required=True) # {"abilities": [{'origin': 'Human', 'type': "CON", 'mod': 2}, {'origin': 'Human', 'type': "WIS", 'mod': 2}]}
+
+############### Party ########################################################  
+class Party(db.Model): # A party of PCs or NPCs
+    foo = db.IntegerProperty(required=False)
+
+############### MAP ##########################################################  
+class Pin(polymodel.PolyModel): 
+    foo = db.IntegerProperty(required=False)
+    
+class Battle(Pin): # The location of a battle      
+    foo = db.IntegerProperty(required=False)    
+
+class Capital(Pin):  # The Capital for a Guild     
+    foo = db.IntegerProperty(required=False)
+    
+class Dungeon(Pin): # The location of a Dungeon
+    foo = db.IntegerProperty(required=False)
+
+class Event(Pin): # The location of an Event
+    foo = db.IntegerProperty(required=False)
+
+##############################################################################  
+
+
+        
+
+
+
