@@ -53,8 +53,23 @@ ART = "Artifact"
 GEA = "Gear"
 ATT = "Attack"  
 UTL = "Utility"   
-HEL = "Heal"             
-                     
+HEL = "Heal"     
+
+# NPC Roles
+ART = 'Artillery'
+BRU = 'Brute'
+CON = 'Controller'
+LUR = 'Lurker'
+MIN = 'Minion'
+SKI = 'Skirmisher'
+SOL = 'Soldier'
+
+# NPC Difficulty
+STAN = 'Standard'
+ELIT = 'Elite'
+SOLO = 'Solo'
+LEAD = 'Leader'       
+     
 ############################# CUSTOM PROPERTIES ##############################
 ##############################################################################   
 class JSONProperty(db.TextProperty):
@@ -96,7 +111,6 @@ class Character(polymodel.PolyModel):
     hit_points = JSONProperty(required=True) # {"hp": 10, "surge": 2, "recharge": 10800}
     scores = JSONProperty(required=True)  #  {"abilities": {"STR": {"score": 10, "mod": 1, "mods": [{"origin": "Singing Sword", "mod": 1}, {"origin": "Dwarf", "mod": 1}]}}, "skills": {"Acrobatics": {"score": 10, "mod": 1, "mods": [{"origin": "trained", "mod": 5}, {"origin": "DEX", "mod": 1}]}}}
     languages = db.StringListProperty(required=True, default=None) 
-    location = db.ReferenceProperty(required=False) 
         
 class PlayerCharacter(Character):
     cast = db.StringProperty(required=True)
@@ -105,6 +119,9 @@ class PlayerCharacter(Character):
     powers = db.ListProperty(db.Key, required=True, default=None)
     equipped = db.ListProperty(db.Key, required=True, default=None)
     purse = JSONProperty(required=True) # {"copper": 800, "silver": 500, "gold": 90, "platinum": 4, "gems": 86}
+    @property
+    def party(self):
+        return PlayerParty.all().filter('members', self.key())
     
 class NonPlayerCharacter(Character):    
     description = db.TextProperty(required=True)
@@ -113,13 +130,23 @@ class NonPlayerCharacter(Character):
     keywords = db.StringListProperty(required=True, default=None) 
     actions = JSONProperty(required=True, default=None)      
     artifacts = db.StringListProperty(required=True, default=None) 
+    unique = db.BooleanProperty(required=True, default=False) # Is there only 1
+    active = db.BooleanProperty(required=True, default=False) # Is one on the map?
+    role = db.StringProperty(required=True)
+    challenge = db.StringProperty(required=True, default=STAN)
     
+class Monster(db.Model): # An instance of a NonPlayerCharacter
+    npc = db.ReferenceProperty(NonPlayerCharacter, required=True, collection_name='monsters')
+    json = JSONProperty(required=True)   
+    @property
+    def party(self):
+        return NonPlayerParty.all().filter('monsters', self.key())     
 ##############################################################################
     
 class Skills(db.Model):
     created = db.DateTimeProperty(auto_now_add=True)
     updated = db.DateTimeProperty(auto_now=True)    
-    pc = db.ReferenceProperty(PlayerCharacter, required=True) # The Player Character   
+    pc = db.ReferenceProperty(PlayerCharacter, required=True, collection_name='skills') # The Player Character   
     acrobatics = db.IntegerProperty(required=True)
     arcana = db.IntegerProperty(required=True)
     athletics = db.IntegerProperty(required=True)
@@ -239,7 +266,7 @@ class Gear(Item):
 class Guild(db.Model):
     created = db.DateTimeProperty(auto_now_add=True)
     updated = db.DateTimeProperty(auto_now=True)   
-    owner = db.ReferenceProperty(PlayerCharacter, required=True)
+    owner = db.ReferenceProperty(PlayerCharacter, required=True, collection_name='players')
     leaders = db.ListProperty(db.Key, required=True, default=None) 
     name = db.StringProperty(required=True)
     motto = db.StringProperty(required=False)
@@ -275,28 +302,46 @@ class Race(db.Model):
 
 ############### Party ########################################################  
 class Party(db.Model): # A party of PCs or NPCs
-    foo = db.IntegerProperty(required=False)
+    created = db.DateTimeProperty(auto_now_add=True)
+    updated = db.DateTimeProperty(auto_now=True)
+    location = db.GeoPtProperty(required=True)
+    log = JSONProperty(required=False)   
+    json = JSONProperty(required=True)        
+
+class PlayerParty(Party):
+    leader = db.ReferenceProperty(PlayerCharacter, required=True)
+    members = db.ListProperty(db.Key, required=True)
+    
+class NonPlayerParty(Party):        
+    owner = db.UserProperty(required=False) # The id of a user or admin
+    monsters = db.ListProperty(db.Key, required=True, default=None) 
+  
 
 ############### MAP ##########################################################  
 class Pin(polymodel.PolyModel): 
-    foo = db.IntegerProperty(required=False)
+    location = db.GeoPtProperty(required=True)
+    created = db.DateTimeProperty(auto_now_add=True)
+    updated = db.DateTimeProperty(auto_now=True)  
+    name = db.IntegerProperty(required=False)  
+    description = db.TextProperty(required=False)
     
 class Battle(Pin): # The location of a battle      
-    foo = db.IntegerProperty(required=False)    
+    attackers = db.ListProperty(db.Key, required=True)    
+    defenders = db.ListProperty(db.Key, required=True)  
+    winner = db.StringProperty(required=True)
 
 class Capital(Pin):  # The Capital for a Guild     
-    foo = db.IntegerProperty(required=False)
+    guild = db.ReferenceProperty(Guild, required=True)
     
 class Dungeon(Pin): # The location of a Dungeon
-    foo = db.IntegerProperty(required=False)
+    owner = db.ReferenceProperty(PlayerCharacter, required=True)
 
 class Event(Pin): # The location of an Event
-    foo = db.IntegerProperty(required=False)
+    start_date = db.DateTimeProperty(required=True)
+    end_date = db.DateTimeProperty(required=True)
 
+class Checkin(Pin): # The location of an active Player
+    character = db.ReferenceProperty(Character, required=True)
+    action = db.StringProperty(required=True)
+    
 ##############################################################################  
-
-
-        
-
-
-

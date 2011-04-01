@@ -3,5 +3,5 @@
 # info@superkablamo.com
 #
 DEBUG = True
-
+TRACE = '##TRACE##  '
 

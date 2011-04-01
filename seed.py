@@ -751,7 +751,9 @@ ATTACK_DATA = [
      'damage_ability_mod': 'INT'}]
      
 NPC_DATA = [
-    {'name': 'Kobold Minion',
+    {'name': 'Kobold',
+     'role': models.MIN, 
+     'challenge': models.STAN,   
      'level': 1,
      'race': 'Kobold',
      'alignment': 'Evil',
@@ -794,7 +796,9 @@ NPC_DATA = [
      'category': 'Humanoid',
      'languages': ['Common', 'Draconic'],
      'keywords': []},
-    {'name': 'Kobold Skirmisher',
+    {'name': 'Kobold',
+     'role': models.SKI,
+     'challenge': models.STAN,        
      'level': 1,
      'race': 'Kobold',
      'alignment': 'Evil',
@@ -839,6 +843,8 @@ NPC_DATA = [
      'languages': ['Common', 'Draconic'],
      'keywords': []},
     {'name': 'Bugbear Warrior',
+     'role': models.BRU,
+     'challenge': models.STAN,        
      'level': 5,
      'race': 'Goblin',
      'alignment': 'Evil',
@@ -897,7 +903,9 @@ NPC_DATA = [
      'category': 'Humanoid',
      'languages': ['Common', 'Goblin'],
      'keywords': []},
-    {'name': 'Goblin Minion',
+    {'name': 'Goblin Cutter',
+     'role': models.MIN,
+     'challenge': models.STAN,        
      'level': 1,
      'race': 'Goblin',
      'alignment': 'Evil',
@@ -942,6 +950,8 @@ NPC_DATA = [
      'languages': ['Common', 'Goblin'],
      'keywords': []},
     {'name': 'Hill Giant',
+     'role': models.BRU,
+     'challenge': models.STAN,        
      'level': 13,
      'race': 'Giant',
      'alignment': 'Chaotic Evil',
@@ -1012,7 +1022,9 @@ NPC_DATA = [
      'category': 'Humanoid',
      'languages': ['Giant'],     
      'keywords': ['Giant']},
-    {'name': 'Skeleton Minion',
+    {'name': 'Decrepit Skeleton',
+     'role': models.MIN,
+     'challenge': models.STAN,        
      'level': 1,
      'race': 'Skeleton',
      'alignment': 'Unaligned',
@@ -1068,6 +1080,8 @@ NPC_DATA = [
       'languages': [],     
       'keywords': ['Undead']},
      {'name': 'Adult Red Dragon',
+      'role': models.SOL,
+      'challenge': models.SOLO,        
       'level': 15,
       'race': 'Dragon',
       'alignment': 'Evil',
@@ -1251,7 +1265,9 @@ def seedNPCs():
                                         category = x['category'],
                                         languages = languages,
                                         keywords = keywords,
-                                        artifacts = artifacts)
+                                        artifacts = artifacts,
+                                        role = x['role'],
+                                        challenge = x['challenge'])
         
         npcs.append(npc)
     db.put(npcs)
