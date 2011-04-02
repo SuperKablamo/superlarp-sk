@@ -60,7 +60,9 @@ class InitAdmin(webapp.RequestHandler):
         elif method == "bonuses": 
             r = seed.seedBonuses()
         elif method == "npcs": 
-            r = seed.seedNPCs()                        
+            r = seed.seedNPCs()
+        elif method == "party": 
+            r = seed.seedPlayerParty()                                    
         #else: r = API404
         #return self.response.out.write(simplejson.dumps(r))
 

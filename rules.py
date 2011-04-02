@@ -20,6 +20,7 @@ from settings import *
 ############################# GAE IMPORTS ####################################
 ##############################################################################
 import logging
+import time
 
 from random import randrange
 
@@ -38,30 +39,35 @@ def rollAttack(attacker, defender, attack):
     """        
     return damage
 
-def rollEncounter(player, geo_pt, player_party):
-    """Checks for any NPCs or PCs that the player can perceive.  Returns a 
-    NonPlayerParty.
+def rollEncounter(player_party, geo_pt):
+    """Creates a random monster encounter.  Returns a NonPlayerParty of
+    monsters or None.  The chance of encountering monsters is based on the
+    player_party's encounter log.
     """ 
-    result = {'players': None, 'npcs': None, 'monster': None}
-    
     # Determine likelyhood of encounter ...
     '''
-    {'encounter': {'encounters': 23, 'uniques': 2, 'start_time': POSIX
+    {'encounters': {'total': 23, 'uniques': 2, 'start_time': POSIX
                    'last_encounter': {'time_since': POSIX, 'checks': 9}}}
     '''
     log = player_party.log
-    checks = log['encounter']['last_encounter']['checks']
+    checks = log['encounters']['last_encounter']['checks']
+    player_party.log['encounters']['last_encounter']['checks'] = checks + 1
     mod = checks*2
     r = utils.roll(100, 1)
     if r > 97: unique = True
     else: unique = False
-    r = r + base 
+    r = r + mod 
     
     # There is an Encounter :)
     if r >= 75:
-        monster_party = db.NonPlayerParty(location = geo_pt, 
-                                          monsters = None,
-                                          json = {'monsters': []})
+        # Update the Encounter Log ...
+        player_party.log['encounters']['total'] += 1
+        last_encounter = {'time_since': time.time(), 'checks': 0}
+        player_party.log['encounters']['last_encounter'] = last_encounter
+        
+        monster_party = models.NonPlayerParty(location = geo_pt, 
+                                              monsters = None,
+                                              json = {'monsters': []})
         
         # Get number of PCs and the average level of the Party ...
         party_size = len(player_party.members)
@@ -81,7 +87,8 @@ def rollEncounter(player, geo_pt, player_party):
             r = 6
         else:    
             r = utils.roll(5, 1)
-            
+        
+        entities = []    
         ######################################################################
         # Minions Minions Minions!
         if r == 1:
@@ -95,20 +102,12 @@ def rollEncounter(player, geo_pt, player_party):
             r = utils.roll(len(npc_keys), 1)
             npc_key = npc_keys[r]
             npc = db.get(npc_key)
-            entities = []
             monster_party_size = party_size*4
             for i in monster_party_size:
                 minion = db.Monster(npc = npc_key,
                                     json = character.getJSONNonPlayer(npc))
                                     
                 entities.append(minion)
-                
-            db.put(entities) # IDs assigned
-            
-            # Need a new loop to get monster JSON after IDs are created ... 
-            for e in entities:
-                minion_json = monster.getJSONMonster(e)
-                monster_party.json['monsters'].append(minion_json)
 
         ######################################################################        
         # Solo boss - uh-oh.                        
@@ -125,15 +124,12 @@ def rollEncounter(player, geo_pt, player_party):
             solo = db.Monster(npc = npc_key,
                               json = character.getJSONNonPlayer(npc))
                                 
-            db.put(solo)
-            solo_json = monster.getJSONMonster(monster)
-            monster_party.json['monsters'].append(solo_json)                    
+            entities.append(solo)
 
         ######################################################################        
         # Minions plus Mini-boss - oh noze!   
         elif r == 3:
             logging.info(TRACE+'rollEncounter():: Minions + Mini-boss!')                
-            entities = []
             # Get Minions
             q = Query('NonPlayerCharacter', key_only=True)
             q.filter('role =', models.MIN)
@@ -167,12 +163,6 @@ def rollEncounter(player, geo_pt, player_party):
                                json = character.getJSONNonPlayer(npc))
                                     
             entities.append(elite)            
-            db.put(entities) # IDs assigned
-            
-            # Need a new loop to get monster JSON after IDs are created ... 
-            for e in entities:
-                monster_json = monster.getJSONMonster(e)
-                monster_party.json['monsters'].append(monster_json)
                 
         ######################################################################
         # There's one for everyone.                
@@ -184,10 +174,10 @@ def rollEncounter(player, geo_pt, player_party):
             
             
             
-            
-        elif r == 5: # Easy pickings.
+        ######################################################################
+        # Easy pickings.            
+        elif r == 5:
             logging.info(TRACE+'rollEncounter():: Easy pickings!')        
-            entities = []
             if avg_level > 2:
                 avg_level -= 2
                     
@@ -230,16 +220,10 @@ def rollEncounter(player, geo_pt, player_party):
                                     
                     entities.append(monster)
 
-            db.put(entities) # IDs assigned
-
-            # Need a new loop to get monster JSON after IDs are created ... 
-            for e in entities:
-                monster_json = monster.getJSONMonster(e)
-                monster_party.json['monsters'].append(monster_json)
-
         ######################################################################        
         elif r == 6: # Unique NPC.
             logging.info(TRACE+'rollEncounter():: Unique NPC')
+            player_party.log['encounters']['uniques'] += 1            
             q = Query('NonPlayerCharacter', key_only=True)
             q.filter('level = ', avg_level)
             q.filter('unique =', True)            
@@ -250,7 +234,7 @@ def rollEncounter(player, geo_pt, player_party):
             solo = db.Monster(npc = npc_key,
                               json = character.getJSONNonPlayer(npc))
                             
-            db.put(solo)
+            entities.append(solo)
             
             # More than 1 Player? Throw in some Minions and make it a Party!
             if party_size > 1:
@@ -269,15 +253,19 @@ def rollEncounter(player, geo_pt, player_party):
                                         json = character.getJSONNonPlayer(npc))
 
                     entities.append(minion)                    
-            
-            db.put(entities) # IDs assigned
 
-            # Need a new loop to get monster JSON after IDs are created ... 
-            for e in entities:
-                monster_json = monster.getJSONMonster(e)
-                monster_party.json['monsters'].append(monster_json)
+    else:
+        return None            
+    
+    entities.append(player_party)
+    db.put(entities) # IDs assigned
 
-    # TODO updates encounter log and saves
+    # Need a new loop to get monster JSON after IDs are created ... 
+    for e in entities:
+        if e.class_name() == models.MON:
+            monster_json = monster.getJSONMonster(e)
+            monster_party.json['monsters'].append(monster_json)
+    
     return monster_party     
 
 def logBattle(location, loot, *characters):

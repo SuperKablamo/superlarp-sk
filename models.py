@@ -42,18 +42,19 @@ ABILITY_MODIFIERS = {'1': -5, '2': -4, '3': -4, '4': -3, '5': -3, '6': -2,
 ALIGNMENTS = ['Good', 'Lawful good', 'Unaligned', 'Evil', 'Chaotic Evil']  
 
 # Model names for convienence 
-PC = "PlayerCharacter"
-NPC = "NonPlayerCharacter"
-WPN = "Weapon"
-ARM = "Armor"
-IMP = "Implement"
-POT = "Potion"
-RIN = "Ring"
-ART = "Artifact"
-GEA = "Gear"
-ATT = "Attack"  
-UTL = "Utility"   
-HEL = "Heal"     
+PC = 'PlayerCharacter'
+NPC = 'NonPlayerCharacter'
+MON = 'Monster'
+WPN = 'Weapon'
+ARM = 'Armor'
+IMP = 'Implement'
+POT = 'Potion'
+RIN = 'Ring'
+ART = 'Artifact'
+GEA = 'Gear'
+ATT = 'Attack'  
+UTL = 'Utility'   
+HEL = 'Heal'     
 
 # NPC Roles
 ART = 'Artillery'
@@ -306,7 +307,7 @@ class Party(db.Model): # A party of PCs or NPCs
     updated = db.DateTimeProperty(auto_now=True)
     location = db.GeoPtProperty(required=True)
     log = JSONProperty(required=False)   
-    json = JSONProperty(required=True)        
+    json = JSONProperty(required=False)        
 
 class PlayerParty(Party):
     leader = db.ReferenceProperty(PlayerCharacter, required=True)

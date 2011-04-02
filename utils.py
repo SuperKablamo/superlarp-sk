@@ -9,13 +9,14 @@
 # ============================================================================
 
 import logging
+import random
 
 from google.appengine.ext import db
 
 def roll(sides=20, number=1):
     """Returns the result of a die/dice roll.
     """
-    return sum(randrange(sides)+1 for die in range(number))
+    return sum(random.randrange(sides)+1 for die in range(number))
 
 def strToInt(s):
     """ Returns an integer formatted from a string.  Or 0, if string cannot be

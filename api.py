@@ -11,6 +11,7 @@
 ############################# SK IMPORTS #####################################
 ############################################################################## 
 import models
+import rules
 import utils
 
 from model import character
@@ -44,13 +45,18 @@ class APIPlayer(webapp.RequestHandler):
         logging.info(TRACE+'APIPlayer:: get()')
         i = utils.strToInt(player_id)
         player = models.PlayerCharacter.get_by_id(i)
-        r = character.getJSONPlayer(player)
+        r = API200
+        r[MSG] = 'A hero?'        
+        r[player.class_name()] = character.getJSONPlayer(player)
         return self.response.out.write(simplejson.dumps(r))
         
     def post(self, method):
         logging.info(TRACE+'APIPlayer:: post()')
         if method == 'new': 
-            r = createPlayer(self)
+            r = API200
+            player = character.createPlayer(self)
+            r[MSG] = 'This one won\'t last long I fear.'
+            r[player.class_name()] = character.getJSONPlayer(player)
         else: 
             r = API404
             r[MSG] = 'New Player was not created.'
@@ -63,12 +69,14 @@ class APINonPlayer(webapp.RequestHandler):
         logging.info(TRACE+'APINonPlayer:: get()')
         i = utils.strToInt(nonplayer_id)
         nonplayer = models.NonPlayerCharacter.get_by_id(i)
-        r = character.getJSONNonPlayer(nonplayer)
+        r = API200
+        r[nonplayer.class_name()] = character.getJSONNonPlayer(nonplayer)
         return self.response.out.write(simplejson.dumps(r))        
     
     def post(self, method):
         logging.info(TRACE+'APINonPlayer:: post()')
         if method == 'new': 
+            r = API200
             r = character.createNonPlayer(self)
         else: r = API404
         return self.response.out.write(simplejson.dumps(r))
@@ -99,7 +107,9 @@ class APIPlayerItem(webapp.RequestHandler):
                 player_id = self.request.get('player_id')
                 name = self.request.get('weapon_name')
                 player = character.addToPlayer(models.Weapon, name, player_id)
+                r = API200
                 if player is not None:
+                    r[MSG] = 'Another tool for the trade?'
                     r =  character.getJSONPlayer(player)  
                 else:
                     r[MSG] = 'Item was not added to Player.'                       
@@ -120,18 +130,48 @@ class APIPlayerPower(webapp.RequestHandler):
                 player_id = self.request.get('player_id')
                 name = self.request.get('attack_name')
                 player = character.addToPlayer(models.Attack, name, player_id)
+                r = API200
                 if player is not None:
-                    r =  character.getJSONPlayer(player) 
+                    r[MSG] = 'With great power comes great responsibility.'
+                    r[player.class_name()] =  character.getJSONPlayer(player) 
                 else:
-                    r['message'] = 'Power was not added to Player.'             
+                    r[MSG] = 'Power was not added to Player.'             
         return self.response.out.write(simplejson.dumps(r)) 
-            
+
+class APIParty(webapp.RequestHandler):
+    """Provides API access to Party, PlayerParty and NonPlayerParty data.
+    Responses are in JSON.
+    """
+    def get(self, method):
+        r = API404
+        logging.info(TRACE+'APIParty:: get()')
+        if method == 'encounter': 
+            party_id = self.request.get('party_id')
+            lat = self.request.get('lat')
+            lon = self.request.get('lon')
+            geo_pt = db.GeoPt(lat, lon)
+            id_ = utils.strToInt(party_id)
+            player_party = models.PlayerParty.get_by_id(id_)
+            monster_party = rules.rollEncounter(player_party, geo_pt)
+            r = API200
+            if monster_party is not None:
+                r[MSG] = 'Cowards run, Heroes fight!'
+                r[monster_party.class_name()] = monster_party.json
+            else:
+                r[MSG] = 'No monsters found.'
+                r['NonPlayerParty'] = None    
+        else: 
+            r[MSG] = method + ' is not a valid resource.'
+        return self.response.out.write(simplejson.dumps(r))
+    
+    def post(post, method):
+        return None    
                
 ######################## METHODS #############################################
 ##############################################################################
 def logEncounterCheck(player_party, encounter=False):
     """
-    {'encounter': {'encounters': 23, 'uniques': 2, 'start_time': POSIX
+    {'encounters': {'count': 23, 'uniques': 2, 'start_time': POSIX
                    'last_encounter': {'time_since': POSIX, 'checks': 9}}}
     """
     return None
@@ -146,6 +186,7 @@ application = webapp.WSGIApplication([(r'/api/character/player/item/(.*)/(.*)',
                                        APIPlayer),
                                       (r'/api/character/nonplayer/(.*)', 
                                        APINonPlayer),
+                                      (r'/api/party/(.*)', APIParty), 
                                       (r'/api/(.*)', APIError)
                                      ],
                                      debug=True)

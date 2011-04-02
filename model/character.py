@@ -180,7 +180,7 @@ def createPlayer(self):
                                     weight = utils.strToInt(self.request.get('weight')),
                                     scores = scores)
     db.put(player)
-    return 
+    return player
         
 def buildScores(self, cat_key, attr_keys):
     scores = {}

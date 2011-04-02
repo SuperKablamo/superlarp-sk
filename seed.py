@@ -19,6 +19,7 @@ from settings import *
 ##############################################################################
 import os
 import logging
+import time
 import urllib2
 
 from django.utils import simplejson
@@ -1276,10 +1277,10 @@ def seedNPCs():
 def seedWeapons():
     """Primes the datastore with Weapons data.
     """
-    logging.info('###################### seedWeapons() #####################')
+    logging.info(TRACE+'seedWeapons()')
     weapons = []
     for x in WEAPON_DATA:
-        logging.info('################## x = '+str(x)+' ####################')        
+        logging.info(TRACE+'seedWeapons():: x = '+str(x))        
         casts = []
         attributes = []
         for a in x['casts']:
@@ -1313,11 +1314,11 @@ def seedWeapons():
 def seedAttacks():
     """Primes the datastore with Attacks data.
     """
-    logging.info('###################### seedAttacks() ######################')
+    logging.info(TRACE+'seedAttacks()')
     attacks = []   
          
     for x in ATTACK_DATA:    
-        logging.info('################## x = '+str(x)+' ####################')
+        logging.info(TRACE+'seedAttacks():: x = '+str(x))
         damage_keywords = []
         casts = []
         for a in x['damage_keywords']:
@@ -1351,6 +1352,26 @@ def seedAttacks():
         
     db.put(attacks)                         
     return  
+
+def seedPlayerParty():
+    """Primes the datastore with a PlayerParty.
+    """
+    logging.info(TRACE+'seedPlayerParty()')   
+    log = {'encounters': 
+                {'total': 23, 'uniques': 2, 'start_time': time.time(),
+                'last_encounter': {'time_since': time.time(), 'checks': 9}}
+          } 
+    leader = models.PlayerCharacter.get_by_id(25)    
+    members = [leader.key()]  
+    location = db.GeoPt(001, 001)
+    player_party = models.PlayerParty(location = location,
+                                      log = log,
+                                      json = None,
+                                      leader = leader,
+                                      members = members)
+    
+    db.put(player_party)
+    return                                      
     
 def getJSONPower(model_name, model):
     json = {'name': model.name, 'description': model.description, 
