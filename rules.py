@@ -45,7 +45,9 @@ def rollEncounter(player_party, geo_pt):
     monsters or None.  The chance of encountering monsters is based on the
     player_party's encounter log.
     """ 
-    logging.info(TRACE+'rollEncounter()')
+    _trace = TRACE+'rollEncounter():: '
+    logging.info(_trace)
+
     # Determine likelyhood of encounter ...
     '''
     {'encounters': {'total': 23, 'uniques': 2, 'start_time': POSIX
@@ -56,6 +58,7 @@ def rollEncounter(player_party, geo_pt):
     player_party.log['encounters']['last_encounter']['checks'] = checks + 1
     mod = checks*2
     r = utils.roll(100, 1)
+    logging.info(_trace+'r = '+str(r))     
     if r > 97: unique = True
     else: unique = False
     r = r + mod 
@@ -78,175 +81,222 @@ def rollEncounter(player_party, geo_pt):
         for m in members:
             total = total + m.level
         avg_level = total/party_size
-        logging.info(TRACE+'rollEncounter():: avg_level = '+str(avg_level))
-
+        logging.info(_trace+'avg_level = '+str(avg_level))
+        
         # Get the appropriate Monster table for the Party level ...    
         monster_level = MONSTER_XP_LEVELS[avg_level]
-        logging.info(TRACE+'rollEncounter():: monster_level = '+str(monster_level))
+        logging.info(_trace+'monster_level = '+str(monster_level))
         
-        # Get the XP total for this Encounter
-        xp_total = monster_level[models.STAN]*party_size    
+        # Get XP target for the encounter based on party level and size ...
+        party_xp = monster_level[models.STAN]*party_size   
+        logging.info(_trace+'party_xp = '+str(party_xp))
         
         # Roll Monster Encounter template   
         if unique:
             r = 6
         else:    
-            r = utils.roll(5, 1)
+            # Change die sides to exclude results from monster generator
+            r = utils.roll(4, 1) 
+        logging.info(_trace+'r = '+str(r))
+        
+        ### TEST ROLL - uncomment to test a specific roll
+        #r = 3
+        ###
         
         entities = []    
         ######################################################################
         # Minions Minions Minions!
         if r == 1:
-            logging.info(TRACE+'rollEncounter():: Minions Minions Minions!')              
-            q = db.Query('NonPlayerCharacter', key_only=True)
-            q.filter('role =', models.MIN)
-            q.filter('challenge = ', models.STAN)
-            q.filter('level = ', avg_level)
+            logging.info(_trace+'Minions Minions Minions!')              
+
+            #  Randomly adjust level to create more variety ...
+            if avg_level > 3:
+                r = utils.roll(5, 1)
+                logging.info(_trace+'r = '+str(r)) 
+                level_mod = 0
+                if r == 1:
+                    level_mod = +2
+                if r == 2:
+                    level_mod = +1
+                if r == 3:
+                    level_mod = 0
+                if r == 4:
+                    level_mod = -1
+                if r == 5:
+                    level_mod = -2
+                
+                avg_level += level_mod        
+                logging.info(_trace+'new avg_level = '+avg_level) 
+            
+            # Get Minion XP and # of Minions for this level ...
+            minion_xp = MONSTER_XP_LEVELS[avg_level][models.MIN]
+            npc_party_size = party_xp/minion_xp
+            logging.info(_trace+'npc_party_size = '+str(npc_party_size)) 
+                        
+            q = db.Query(models.NonPlayerCharacter, keys_only=True)                    
+            q.filter('role = ', models.MIN)
+            q.filter('challenge =', models.STAN)
+            q.filter('level =', avg_level)
             q.filter('unique =', False)
             npc_keys = q.fetch(100)
+            logging.info(_trace+'# npc_keys = '+str(len(npc_keys)))              
             r = utils.roll(len(npc_keys), 1)
+            logging.info(_trace+'r = '+str(r))  
             npc_key = npc_keys[r]
             npc = db.get(npc_key)
-            monster_party_size = party_size*4
-            for i in monster_party_size:
-                minion = db.Monster(npc = npc_key,
-                                    json = character.getJSONNonPlayer(npc))
+            for i in str(npc_party_size):
+                m = models.Monster(npc = npc_key,
+                                   json = character.getJSONNonPlayer(npc))
                                     
-                entities.append(minion)
+                entities.append(m)
 
         ######################################################################        
         # Solo boss - uh-oh.                        
         elif r == 2:  
-            logging.info(TRACE+'rollEncounter():: Solo boss - uh-oh!')              
-            q = db.Query('NonPlayerCharacter', key_only=True)
-            q.filter('challenge = ', models.SOLO)
-            q.filter('level = ', avg_level)
+            logging.info(_trace+'Solo boss - uh-oh!')              
+            #  Randomly adjust level to create more variety ...
+            if avg_level > 1:
+                r = utils.roll(3, 1)
+                level_mod = 0  
+                if r == 1:
+                    level_mod = -1
+                if r == 2:
+                    level_mod = 0
+                if r == 3:
+                    level_mod = 1             
+                avg_level += level_mod        
+                logging.info(_trace+'new avg_level = '+avg_level)
+                                
+            q = db.Query(models.NonPlayerCharacter, keys_only=True)
+            q.filter('challenge =', models.SOLO)
+            q.filter('level =', avg_level)
             q.filter('unique =', False)            
             npc_keys = q.fetch(100)
             r = utils.roll(len(npc_keys), 1)
             npc_key = npc_keys[r]
             npc = db.get(npc_key)
-            solo = db.Monster(npc = npc_key,
-                              json = character.getJSONNonPlayer(npc))
+            solo = models.Monster(npc = npc_key,
+                                  json = character.getJSONNonPlayer(npc))
                                 
             entities.append(solo)
-
-        ######################################################################        
-        # Minions plus Mini-boss - oh noze!   
-        elif r == 3:
-            logging.info(TRACE+'rollEncounter():: Minions + Mini-boss!')                
-            # Get Minions
-            q = db.Query('NonPlayerCharacter', key_only=True)
-            q.filter('role =', models.MIN)
-            q.filter('challenge = ', models.STAN)
-            q.filter('level = ', avg_level)
-            q.filter('unique =', False)            
-            npc_keys = q.fetch(100)
-            r = utils.roll(len(npc_keys), 1)
-            npc_key = npc_keys[r]
-            npc = db.get(npc_key)
-            minion_party_size = party_size*4
-            if party_size > 1:
-                minion_party_size -= 4
-            for i in minion_party_size:
-                minion = db.Monster(npc = npc_key,
-                                    json = character.getJSONNonPlayer(npc))
-                                    
-                entities.append(minion)
-            
-            # Get Mini-boss
-            q = db.Query('NonPlayerCharacter', key_only=True)
-            q.filter('role !=', models.MIN)
-            q.filter('challenge = ', models.ELIT)
-            q.filter('level = ', avg_level)
-            q.filter('unique =', False)            
-            npc_keys = q.fetch(100)
-            r = utils.roll(len(npc_keys), 1)
-            npc_key = npc_keys[r]
-            npc = db.get(npc_key)
-            elite = db.Monster(npc = npc_key,
-                               json = character.getJSONNonPlayer(npc))
-                                    
-            entities.append(elite)            
                 
         ######################################################################
         # There's one for everyone.                
-        elif r == 4:  
-            logging.info(TRACE+'rollEncounter():: There\'s one for everyone!')  
-            
-                         
-            foo = 1
-            
-            
-            
-        ######################################################################
-        # Easy pickings.            
-        elif r == 5:
-            logging.info(TRACE+'rollEncounter():: Easy pickings!')        
-            if avg_level > 2:
-                avg_level -= 2
-                    
-            # Get Minions
-            q = db.Query('NonPlayerCharacter', key_only=True)
-            q.filter('role =', models.MIN)
-            q.filter('challenge = ', models.STAN)
-            q.filter('level = ', avg_level)
-            q.filter('unique =', False)            
-            npc_keys = q.fetch(100)
+        elif r == 3:  
+            logging.info(_trace+'There\'s one for everyone!')  
+            logging.info(_trace+'monster_level = '+str(monster_level[models.STAN]))
+            q = db.Query(models.NonPlayerCharacter, keys_only=True)
+            q.filter('challenge =', models.STAN)
+            q.filter('experience =', monster_level[models.STAN])
+            q.filter('level =', avg_level)
+            q.filter('unique =', False)    
+            logging.info(_trace+'query = '+str(q))             
+            npc_keys = q.fetch(100)         
             r = utils.roll(len(npc_keys), 1)
-            npc_key = npc_keys[r]
+            logging.info(_trace+'r = '+str(r))
+            npc_key = npc_keys[r-1]
             npc = db.get(npc_key)
-            minion_party_size = party_size*4
-            if party_size > 1:
-                minion_party_size -= 4
-            for i in minion_party_size:
-                minion = db.Monster(npc = npc_key,
-                                    json = character.getJSONNonPlayer(npc))
-                
-                entities.append(minion)                    
-            
-            # Get Standards if the Player Party level is high enough            
-            if not avg_lvl < 3:
-                q = db.Query('NonPlayerCharacter', key_only=True)
-                q.filter('role !=', models.MIN)
-                q.filter('challenge = ', models.STAN)
-                q.filter('level = ', avg_level)
-                q.filter('unique =', False)            
-                npc_keys = q.fetch(100)
-                r = utils.roll(len(npc_keys), 1)
-                npc_key = npc_keys[r]
-                npc = db.get(npc_key)
-                standard_party_size = 1
-                if party_size > 3:
-                    standard_party_size = 2
-                for i in standard_party_size:
-                    monster = db.Monster(npc = npc_key,
-                                         json = character.getJSONNonPlayer(npc))
+            monster_party_size = party_size
+            for i in str(monster_party_size):
+                m = models.Monster(npc = npc_key,
+                                   json = character.getJSONNonPlayer(npc))
                                     
-                    entities.append(monster)
+                entities.append(m)            
 
         ######################################################################        
-        elif r == 6: # Unique NPC.
-            logging.info(TRACE+'rollEncounter():: Unique NPC')
-            player_party.log['encounters']['uniques'] += 1            
-            q = db.Query('NonPlayerCharacter', key_only=True)
-            q.filter('level = ', avg_level)
-            q.filter('unique =', True)            
+        # Minions plus Mini-boss - oh noze!   
+        elif r == 4:
+            logging.info(_trace+'Minions + Mini-boss!')                
+            #  Randomly adjust level to create more variety ...
+            if avg_level > 2:
+                r = utils.roll(3, 1)
+                logging.info(_trace+'r = '+str(r)) 
+                level_mod = 0
+                if r == 1:
+                    level_mod = +2
+                if r == 2:
+                    level_mod = +1
+                if r == 3:
+                    level_mod = 0
+
+                boss_level = avg_level + level_mod        
+            else:
+                boss_level = 3    
+            logging.info(_trace+'boss_level = '+boss_level)
+
+            # Get Mini-boss
+            q = db.Query(models.NonPlayerCharacter, keys_only=True)
+            q.filter('challenge =', models.LEAD)
+            q.filter('level =', boss_level)
+            q.filter('unique =', False)            
             npc_keys = q.fetch(100)
+            logging.info(_trace+'# npc_keys = '+str(len(npc_keys)))                
             r = utils.roll(len(npc_keys), 1)
+            logging.info(_trace+'r = '+str(r))              
             npc_key = npc_keys[r]
             npc = db.get(npc_key)
-            solo = db.Monster(npc = npc_key,
-                              json = character.getJSONNonPlayer(npc))
+            elite = models.Monster(npc = npc_key,
+                                   json = character.getJSONNonPlayer(npc))
+                                    
+            entities.append(elite)            
+            
+            # Get Minions
+            race = elite.race
+            q = db.Query(models.NonPlayerCharacter, keys_only=True)
+            q.filter('role =', models.MIN)
+            q.filter('challenge =', models.STAN)
+            q.filter('level =', avg_level)
+            q.filter('unique =', False)    
+            q.filter('race =', race)                      
+            npc_keys = q.fetch(100)
+            logging.info(_trace+'# npc_keys = '+str(len(npc_keys)))              
+            r = utils.roll(len(npc_keys), 1)
+            logging.info(_trace+'r = '+str(r))
+            npc_key = npc_keys[r]
+            npc = db.get(npc_key)
+
+            # Get Minion XP and # of Minions for this level ...
+            minion_xp = MONSTER_XP_LEVELS[avg_level][models.MIN]
+            npc_party_size = party_xp/minion_xp
+            logging.info(_trace+'npc_party_size = '+str(npc_party_size))
+
+            for i in str(npc_party_size):
+                m = models.Monster(npc = npc_key,
+                                   json = character.getJSONNonPlayer(npc))
+                                    
+                entities.append(m)
+                        
+        ######################################################################
+        # Dungeon Master party.            
+        elif r == 5:
+            logging.info(_trace+'You made the DM angry!') 
+            # Return a set monster party  ...
+            
+            
+        ######################################################################        
+        elif r == 6: # Unique NPC.
+            logging.info(_trace+'Unique NPC')
+            player_party.log['encounters']['uniques'] += 1            
+            q = db.Query(models.NonPlayerCharacter, keys_only=True)
+            q.filter('level =', avg_level)
+            q.filter('unique =', True)            
+            npc_keys = q.fetch(100)
+            logging.info(_trace+'# npc_keys = '+str(len(npc_keys)))              
+            r = utils.roll(len(npc_keys), 1)
+            logging.info(_trace+'r = '+str(r))
+            npc_key = npc_keys[r]
+            npc = db.get(npc_key)
+            solo = models.Monster(npc = npc_key,
+                                  json = character.getJSONNonPlayer(npc))
                             
             entities.append(solo)
             
             # More than 1 Player? Throw in some Minions and make it a Party!
             if party_size > 1:
-                q = db.Query('NonPlayerCharacter', key_only=True)
+                q = db.Query(models.NonPlayerCharacter, keys_only=True)
                 q.filter('role =', models.MIN)
-                q.filter('challenge = ', models.STAN)
-                q.filter('level = ', avg_level)
+                q.filter('challenge =', models.STAN)
+                q.filter('level =', avg_level)
                 q.filter('unique =', False)            
                 npc_keys = q.fetch(100)
                 r = utils.roll(len(npc_keys), 1)
@@ -254,23 +304,23 @@ def rollEncounter(player_party, geo_pt):
                 npc = db.get(npc_key)
                 minion_party_size = party_size*4
                 for i in minion_party_size:
-                    minion = db.Monster(npc = npc_key,
-                                        json = character.getJSONNonPlayer(npc))
+                    m = modles.Monster(npc = npc_key,
+                                       json = character.getJSONNonPlayer(npc))
 
-                    entities.append(minion)                    
+                    entities.append(m)                    
 
     else:
         return None            
     
-    entities.append(player_party)
     db.put(entities) # IDs assigned
 
     # Need a new loop to get monster JSON after IDs are created ... 
     for e in entities:
-        if e.class_name() == models.MON:
-            monster_json = monster.getJSONMonster(e)
-            monster_party.json['monsters'].append(monster_json)
-    
+        monster_json = monster.getJSONMonster(e)
+        monster_party.json['monsters'].append(monster_json)
+
+    parties = [player_party, monster_party]        
+    db.put(parties)
     return monster_party     
 
 def logBattle(location, loot, *characters):
@@ -282,6 +332,7 @@ def logBattle(location, loot, *characters):
 ##############################################################################    
 
 MONSTER_XP_LEVELS = [
+    None,
     {models.STAN: 100, models.MIN: 25, models.ELIT: 200, models.SOLO: 500},
     {models.STAN: 125, models.MIN: 31, models.ELIT: 250, models.SOLO: 625},
     {models.STAN: 150, models.MIN: 38, models.ELIT: 300, models.SOLO: 750},
@@ -310,4 +361,3 @@ MONSTER_XP_LEVELS = [
     {models.STAN: 9000, models.MIN: 2250, models.ELIT: 18000, models.SOLO: 45000},
     {models.STAN: 11000, models.MIN: 2750, models.ELIT: 22000, models.SOLO: 55000},
     {models.STAN: 13000, models.MIN: 3250, models.ELIT: 26000, models.SOLO: 65000}]
-

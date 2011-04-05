@@ -23,7 +23,7 @@ from google.appengine.ext import db
 
 ######################## METHODS #############################################
 ##############################################################################
-def getMonsterJSON(monster):
+def getJSONMonster(monster):
     logging.info(TRACE+'getMonsterJSON()')
     json = monster.json
     json['id'] = monster.key().id()

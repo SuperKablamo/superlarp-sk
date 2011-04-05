@@ -152,6 +152,11 @@ class APIParty(webapp.RequestHandler):
             geo_pt = db.GeoPt(lat, lon)
             id_ = utils.strToInt(party_id)
             player_party = models.PlayerParty.get_by_id(id_)
+            # Return Error if player_party is not found.
+            if player_party is None:
+                r[MSG] = 'Invalid party_id!'
+                return self.response.out.write(simplejson.dumps(r))
+                
             monster_party = rules.rollEncounter(player_party, geo_pt)
             r = API200
             if monster_party is not None:

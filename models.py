@@ -65,7 +65,7 @@ MIN = 'Minion'
 SKI = 'Skirmisher'
 SOL = 'Soldier'
 
-# NPC Difficulty
+# NPC Challenge
 STAN = 'Standard'
 ELIT = 'Elite'
 SOLO = 'Solo'
@@ -302,7 +302,7 @@ class Race(db.Model):
     bonuses = JSONProperty(required=True) # {"abilities": [{'origin': 'Human', 'type': "CON", 'mod': 2}, {'origin': 'Human', 'type': "WIS", 'mod': 2}]}
 
 ############### Party ########################################################  
-class Party(db.Model): # A party of PCs or NPCs
+class Party(polymodel.PolyModel): # A party of PCs or NPCs
     created = db.DateTimeProperty(auto_now_add=True)
     updated = db.DateTimeProperty(auto_now=True)
     location = db.GeoPtProperty(required=True)
