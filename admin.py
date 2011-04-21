@@ -65,6 +65,7 @@ class InitAdmin(webapp.RequestHandler):
             r = seed.seedPlayerParty()                                    
         #else: r = API404
         #return self.response.out.write(simplejson.dumps(r))
+        self.redirect('/admin/init')  
 
 class CastAdmin(webapp.RequestHandler):
     def get(self):

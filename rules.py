@@ -93,10 +93,18 @@ def rollEncounter(player_party, geo_pt):
         
         # Roll Monster Encounter template   
         if unique:
-            r = 6
+            r = 10
         else:    
             # Change die sides to exclude results from monster generator
-            r = utils.roll(4, 1) 
+            
+            # Low level
+            if avg_level < 3:
+                r = utils.roll(8, 1) 
+                
+            # Higher level includes Solo encounters           
+            else:
+                r = utils.roll(9, 1) 
+        
         logging.info(_trace+'r = '+str(r))
         
         ### TEST ROLL - uncomment to test a specific roll
@@ -106,7 +114,7 @@ def rollEncounter(player_party, geo_pt):
         entities = []    
         ######################################################################
         # Minions Minions Minions!
-        if r == 1:
+        if r == 1 or r == 2:
             logging.info(_trace+'Minions Minions Minions!')              
 
             #  Randomly adjust level to create more variety ...
@@ -150,39 +158,11 @@ def rollEncounter(player_party, geo_pt):
                                     
                 entities.append(m)
 
-        ######################################################################        
-        # Solo boss - uh-oh.                        
-        elif r == 2:  
-            logging.info(_trace+'Solo boss - uh-oh!')              
-            #  Randomly adjust level to create more variety ...
-            if avg_level > 1:
-                r = utils.roll(3, 1)
-                level_mod = 0  
-                if r == 1:
-                    level_mod = -1
-                if r == 2:
-                    level_mod = 0
-                if r == 3:
-                    level_mod = 1             
-                avg_level += level_mod        
-                logging.info(_trace+'new avg_level = '+avg_level)
-                                
-            q = db.Query(models.NonPlayerCharacter, keys_only=True)
-            q.filter('challenge =', models.SOLO)
-            q.filter('level =', avg_level)
-            q.filter('unique =', False)            
-            npc_keys = q.fetch(100)
-            r = utils.roll(len(npc_keys), 1)
-            npc_key = npc_keys[r]
-            npc = db.get(npc_key)
-            solo = models.Monster(npc = npc_key,
-                                  json = character.getJSONNonPlayer(npc))
-                                
-            entities.append(solo)
+
                 
         ######################################################################
         # There's one for everyone.                
-        elif r == 3:  
+        elif r == 3 or r == 4:  
             logging.info(_trace+'There\'s one for everyone!')  
             logging.info(_trace+'monster_level = '+str(monster_level[models.STAN]))
             q = db.Query(models.NonPlayerCharacter, keys_only=True)
@@ -205,23 +185,9 @@ def rollEncounter(player_party, geo_pt):
 
         ######################################################################        
         # Minions plus Mini-boss - oh noze!   
-        elif r == 4:
+        elif r == 5 or r == 6:
             logging.info(_trace+'Minions + Mini-boss!')                
-            #  Randomly adjust level to create more variety ...
-            if avg_level > 2:
-                r = utils.roll(3, 1)
-                logging.info(_trace+'r = '+str(r)) 
-                level_mod = 0
-                if r == 1:
-                    level_mod = +2
-                if r == 2:
-                    level_mod = +1
-                if r == 3:
-                    level_mod = 0
-
-                boss_level = avg_level + level_mod        
-            else:
-                boss_level = 3    
+            boss_level = avg_level + 2        
             logging.info(_trace+'boss_level = '+boss_level)
 
             # Get Mini-boss
@@ -268,13 +234,45 @@ def rollEncounter(player_party, geo_pt):
                         
         ######################################################################
         # Dungeon Master party.            
-        elif r == 5:
+        elif r == 7 or r == 8:
             logging.info(_trace+'You made the DM angry!') 
             # Return a set monster party  ...
-            
+
+        ######################################################################        
+        # Solo boss - uh-oh.                        
+        elif r == 9:  
+            logging.info(_trace+'Solo boss - uh-oh!')              
+            #  Randomly adjust level to create more variety ...
+            if avg_level > 1:
+                r = utils.roll(3, 1)
+                level_mod = 0  
+                if r == 1:
+                    level_mod = -1
+                if r == 2:
+                    level_mod = 0
+                if r == 3:
+                    level_mod = 1             
+                avg_level += level_mod        
+                logging.info(_trace+'new avg_level = '+avg_level)
+                                
+            q = db.Query(models.NonPlayerCharacter, keys_only=True)
+            q.filter('challenge =', models.SOLO)
+            q.filter('level =', avg_level)
+            q.filter('unique =', False)            
+            npc_keys = q.fetch(100)
+            r = utils.roll(len(npc_keys), 1)
+            npc_key = npc_keys[r]
+            npc = db.get(npc_key)
+            solo = models.Monster(npc = npc_key,
+                                  json = character.getJSONNonPlayer(npc))
+                                
+            entities.append(solo)  
+     
+
+
             
         ######################################################################        
-        elif r == 6: # Unique NPC.
+        elif r == 10: # Unique NPC.
             logging.info(_trace+'Unique NPC')
             player_party.log['encounters']['uniques'] += 1            
             q = db.Query(models.NonPlayerCharacter, keys_only=True)
