@@ -29,22 +29,82 @@ from random import randrange
 ##############################################################################
     
 def rollLoot(level=1): 
-    """Returns a randomly generated, level appropriate treasure package.  
+    '''Returns a randomly generated, level appropriate treasure package.  
     Result is a dictionary of loot items
-    """   
+    '''   
     return loot.loot(level)    
     
 def rollAttack(attacker, defender, attack):
-    """Resolves an attack and returns the damage result as a dictionary:
-    {'damage': 10, type: 'Fire'}
-    """        
-    return damage
-
+    '''Resolves an attack and returns the damage result as a dictionary:
+    {'damage': 10, 'keyword': 'Fire', 'status': 'Hit'}
+    '''        
+    _trace = TRACE+'rollAttack():: '
+    logging.info(_trace)
+    damage_keywords = attack['damage_keywords']
+    json = {'damage': 0, 'keywords': damage_keywords, 'status': 'Hit'}
+    
+    # Roll Attack, natural 20 is a Hit
+    attack_roll = utils.roll(20, 1)
+    if attack_roll != 20:
+        mod_attack_roll = attack_roll + attack['attack_mod']
+        logging.info(_trace+'attack_roll = '+attack_roll)
+        logging.info(_trace+'mod_attack_roll = '+mod_attack_roll)
+    
+        # Get Defense Score
+        defense = attack['defense_ability']
+        defense_score = defender['scores']['defenses'][defense]['score']
+        logging.info(_trace+'defense_score = '+defense_score)     
+    
+        # Evaluate Hit
+        if modattack_roll < defense_score:
+            json['status'] = 'Miss'
+    
+    # Roll Damage
+    damage_dice = attack['damage_dice'] 
+    damage_die = attack['damage_die']
+    damage_mod = attack['damage_mod']
+    damage = 0
+    if damage_die != 0:
+        damage = utils.roll(damage_die, damage_dice)
+    damage += damage_mod
+    
+    # Calculate Defenses
+    immune_to = defender['immune']
+    resists =  defender['resist']
+    vulnerable_to = defender['vulnerable']
+    damage_keyword = None
+    for d in damage_keywords:
+        
+        # No Damage if Defender has immunity
+        if d in immune_to:
+            status = 'Immune to '+d
+            json['status'] = status
+            return json        
+        
+        # Reduced Damage for resistence
+        resist_keys = resists.keys()
+        if d in resist_keys:
+            mod = resists[d]
+            damage -= mod
+        
+        # Increased Damage for vulnerability
+        vulnerable_keys = vulnerable_to.keys()
+        if d in vulnerable_keys:
+            mod = vulnerable_to[d]
+            damage += mod
+    
+    # Damage cannot be less than 0
+    if damage < 0:
+        damage = 0    
+    
+    json['damage'] = damage
+    return json
+    
 def rollEncounter(player_party, geo_pt):
-    """Creates a random monster encounter.  Returns a NonPlayerParty of
+    '''Creates a random monster encounter.  Returns a NonPlayerParty of
     monsters or None.  The chance of encountering monsters is based on the
     player_party's encounter log.
-    """ 
+    ''' 
     _trace = TRACE+'rollEncounter():: '
     logging.info(_trace)
 
@@ -322,8 +382,8 @@ def rollEncounter(player_party, geo_pt):
     return monster_party     
 
 def logBattle(location, loot, *characters):
-    """Stores a summary of a battle. 
-    """
+    '''Stores a summary of a battle. 
+    '''
     return True
 
 ######################## DATA ################################################
