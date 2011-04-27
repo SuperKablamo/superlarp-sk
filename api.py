@@ -103,7 +103,7 @@ class APIPlayerItem(webapp.RequestHandler):
         logging.info(TRACE+'APIPlayerItem:: post()')
         r = API404
         if model == models.WPN.lower():
-            if method == "add":
+            if method == 'add':
                 player_id = self.request.get('player_id')
                 name = self.request.get('weapon_name')
                 player = character.addToPlayer(models.Weapon, name, player_id)
@@ -137,6 +137,69 @@ class APIPlayerPower(webapp.RequestHandler):
                 else:
                     r[MSG] = 'Power was not added to Player.'             
         return self.response.out.write(simplejson.dumps(r)) 
+
+class APIPlayerAction(webapp.RequestHandler):
+    """Provides API access to Player Actions.  Responses are in JSON.
+    """
+    def get(self, type, method):
+        r = API404
+        return self.response.out.write(simplejson.dumps(r)) 
+
+    def post(self, action):
+        _trace = TRACE+'APIPlayerAction:: post() '
+        logging.info(_trace)
+        r = API404
+        player_id = self.request.get('player_id')
+        action_name = self.request.get('action_name')
+        target_ids = self.request.get('target_ids')
+        logging.info('action = '+action)        
+        logging.info(_trace+'player_id = '+player_id)
+        logging.info(_trace+'action_name = '+action_name)
+        logging.info(_trace+'target_ids = '+target_ids)
+        
+        # Get the Player and Monsters in one get, and sort them 
+        keys = []
+        player_key = db.Key.from_path('PlayerCharacter', player_id)
+        keys.append(player_key)
+        for t in target_ids:
+            monster_key = db.Key.from_path('Monster', t)
+            keys.append(monster_key)
+        entities = db.get(keys)  
+        player = None
+        monsters = []  
+        for e in entities:
+            if e.kind() == 'PlayerCharacter':
+                player = e
+                logging.info('player.name = '+player.name)
+            if e.kind() == 'Monster':
+                monsters.append(e)
+                logging.info('monster.name = '+e.name)
+                    
+        # Determine the type of Action being used
+        if action == 'weapon':
+            weapons = player.actions['weapons']
+            weapon = None
+            for w in weapons:
+                if w.name == action_name:
+                    weapon = w
+            
+            damage = rules.rollAttack(player, monsters, weapon)
+            r = API200
+            r['damage'] = damage
+                     
+        if action == 'attack':
+            powers = player.actions['powers']
+            power = None
+            for p in powers:
+                if p.name == action_name:
+                    power = p            
+                    
+            damage = rules.rollAttack(player, monsters, power)  
+            r = API200
+            r['damage'] = damage                      
+
+        return self.response.out.write(simplejson.dumps(r))
+
 
 class APIParty(webapp.RequestHandler):
     """Provides API access to Party, PlayerParty and NonPlayerParty data.
@@ -187,6 +250,8 @@ application = webapp.WSGIApplication([(r'/api/character/player/item/(.*)/(.*)',
                                        APIPlayerItem),
                                       (r'/api/character/player/power/(.*)/(.*)', 
                                        APIPlayerPower), 
+                                      (r'/api/character/player/action/(.*)', 
+                                       APIPlayerAction),                                       
                                       (r'/api/character/player/(.*)', 
                                        APIPlayer),
                                       (r'/api/character/nonplayer/(.*)', 

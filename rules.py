@@ -34,10 +34,16 @@ def rollLoot(level=1):
     '''   
     return loot.loot(level)    
     
-def rollAttack(attacker, defender, attack):
+def rollAttack(attacker, defenders, attack):
     '''Resolves an attack and returns the damage result as a dictionary:
-    {'damage': 10, 'keyword': 'Fire', 'status': 'Hit'}
-    '''        
+    {'damage': 10, 'keywords': ['Fire'], 'status': 'Hit'}
+    '''
+    
+    # THIS IS TEST CODE, take the first defender since logic is not yet built 
+    # to account for multiple defenders
+    defender = defenders[0]
+    # 
+            
     _trace = TRACE+'rollAttack():: '
     logging.info(_trace)
     damage_keywords = attack['damage_keywords']
@@ -56,7 +62,7 @@ def rollAttack(attacker, defender, attack):
         logging.info(_trace+'defense_score = '+defense_score)     
     
         # Evaluate Hit
-        if modattack_roll < defense_score:
+        if mod_attack_roll < defense_score:
             json['status'] = 'Miss'
     
     # Roll Damage

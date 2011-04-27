@@ -112,6 +112,9 @@ class Character(polymodel.PolyModel):
     hit_points = JSONProperty(required=True) # {"hp": 10, "surge": 2, "recharge": 10800}
     scores = JSONProperty(required=True)  #  {"abilities": {"STR": {"score": 10, "mod": 1, "mods": [{"origin": "Singing Sword", "mod": 1}, {"origin": "Dwarf", "mod": 1}]}}, "skills": {"Acrobatics": {"score": 10, "mod": 1, "mods": [{"origin": "trained", "mod": 5}, {"origin": "DEX", "mod": 1}]}}}
     languages = db.StringListProperty(required=True, default=None) 
+    immunities = db.StringListProperty(required=True, default=None) 
+    resist = JSONProperty(required=False) # {'Fire': 10, 'Necrotic': 10}
+    vulnerable = JSONProperty(required=False) # {'Radiant': 5}
         
 class PlayerCharacter(Character):
     cast = db.StringProperty(required=True)
