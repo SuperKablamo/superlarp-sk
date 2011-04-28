@@ -15,6 +15,12 @@ import rules
 import seed
 import utils
 
+from model import character
+from model import item
+from model import loot
+from model import monster
+from model import power
+
 from settings import *
 
 ############################# GAE IMPORTS ####################################
@@ -54,9 +60,13 @@ class InitAdmin(webapp.RequestHandler):
         elif method == "casts": 
             r = seed.seedCasts()
         elif method == "weapons": 
-            r = seed.seedWeapons()
+            r = item.seedWeapons()
+        elif method == "armor": 
+            r = item.seedArmor()            
         elif method == "attacks": 
-            r = seed.seedAttacks()                        
+            r = power.seedAttacks()
+        elif method == "pc_templates":
+            r = character.seedPlayerCharacters()                            
         elif method == "bonuses": 
             r = seed.seedBonuses()
         elif method == "npcs": 

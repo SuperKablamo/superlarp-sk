@@ -352,9 +352,76 @@ def setScore(scores, cat_key, keyword, score):
     scores[cat_key][keyword]['score'] = score       
     return scores
 
-def buildPCTemplates():
-    return
+def seedPlayerCharacters():
+    '''Primes the datastore with PlayerCharacter templates.
+    '''
+    _trace = TRACE+'seedPlayerCharacters() '
+    logging.info(_trace)
+    pc_templates = []   
+    for x in PC_TEMPLATES:    
+        logging.info(_trace+'x = '+str(x))
         
+        # Parse out lists of data.
+        powers = []
+        items = []
+        languages = []        
+        keys = x['powers'].keys()
+        for k in keys:
+            _dict = x['powers'][k]
+            for name in _dict:
+                if k == 'attacks':
+                    key = db.Key.from_path('Attack', name)
+                elif k == 'utilities':
+                    key = db.Key.from_path('Utility', name)                    
+                elif k == 'healing':
+                    key = db.Key.from_path('Heal', name)
+                powers.append(key)    
+                        
+        keys = x['items'].keys()
+        for k in keys:
+            _dict = x['items'][k]
+            for name in _dict:
+                if k == 'gear':
+                    key = db.Key.from_path('Gear', name)
+                elif k == 'armor':
+                    key = db.Key.from_path('Armor', name)                    
+                elif k == 'rings':
+                    key = db.Key.from_path('Ring', name)                    
+                elif k == 'weapons':
+                    key = db.Key.from_path('Weapon', name)                    
+                elif k == 'artifacts':
+                    key = db.Key.from_path('Artifact', name)                    
+                elif k == 'potions':
+                    key = db.Key.from_path('Potion', name)
+                items.append(key)
+                
+        for a in x['languages']:
+            languages.append(a)    
+        
+        pc_template = models.PlayerCharacterTemplate(key_name = x['name'],
+                                   name = x['name'],
+                                   template_id = x['template_id'],
+                                   level = 1,
+                                   race = x['race'],
+                                   alignment = x['alignment'], 
+                                   size = x['size'],
+                                   experience = 0,
+                                   speed = x['speed'], 
+                                   hit_points = x['hit_points'],                                    
+                                   languages = languages,
+                                   immunities = [],
+                                   scores = x['scores'],
+                                   cast = x['cast'],
+                                   height = x['height'],
+                                   weight = x['weight'],
+                                   powers = powers,
+                                   items = items,
+                                   purse = x['purse'])
+
+        pc_templates.append(pc_template)      
+
+    db.put(pc_templates)                         
+    return
 
 ######################## DATA ################################################
 ##############################################################################    
@@ -367,12 +434,7 @@ PC_TEMPLATES = [
   'race': 'Human',
   'weight': 220,
   'height': 72,
-  'level': 1,
-  'experience': 0,
-  'immunities': [],
   'purse': {'copper': 0, 'silver': 0, 'gold': 100, 'platinum': 0, 'gems': 0},
-  'resistance': None,
-  'vulnerable': None,
   'powers': 
     {'attacks': ['Sure Strike','Furious Strike','Brute Strike'],      
     'utilities': [],
@@ -410,59 +472,16 @@ PC_TEMPLATES = [
       'FORT':{'score':17,'config':{'base':10,'class':2,'race':1,'ability':4,'level':0,'armor':0,'item':0}}}},
   'hit_points':{'surge_recharge':7855,'hp':29,'surge':7},
   'items': 
-    {'implements': [],
-    'gear': [],
-    'armor': 
-      [{'name': 'Scale',
-      'description': None,
-      'group': 'Heavy',
-      'cost': 45,      
-      'attributes': [],
-      'casts': ['Fighter'],      
-      'magic': False,
-      'weight': 45,            
-      'slot': 'Body',
-      'ac_bonus': 7,
-      'min_bonus': 0,
-      'check': 0,
-      'speed': -1}],
+    {'gear': [],
+    'armor': ['Scale'],
     'rings': [],
-    'weapons': 
-      [{'name': 'Greatsword',
-      'description': None,
-      'level': 1,
-      'group': 'Heavy Blade',
-      'cost': 30,      
-      'attributes': [],
-      'casts': ['Barbarian','Fighter','Ranger'],      
-      'magic': False,
-      'weight': 8,      
-      'short_range': 0,
-      'long_range': 0,            
-      'slot': 'Two-hand',
-      'proficiency': 3,
-      'damage_dice': 1,
-      'damage_die': 10},
-      {'name': 'Longbow',
-      'description': None,
-      'level': 1,
-      'group': 'Bow',
-      'cost': 30,      
-      'attributes': ['Load Free'],
-      'casts': ['Fighter','Ranger'],      
-      'magic': False,
-      'weight': 3,      
-      'short_range': 30,
-      'long_range': 60,            
-      'slot': 'Two-hand',
-      'proficiency': 2,
-      'damage_dice': 1,
-      'damage_die': 10}],
+    'weapons': ['Greatsword','Longbow'],
     'artifacts': [],
     'potions': []},
   'speed': 6,
   'alignment': 'Good',
-  'size': 'Medium'},
+  'size': 'Medium',
+  'languages': ['Common', 'Dwarven']},
   
   ############################## PLAYER TEMPLATE 2 ###########################
   {'template_id': 2,
@@ -471,15 +490,9 @@ PC_TEMPLATES = [
   'race': 'Halfling',
   'weight': 80,
   'height': 48,
-  'level': 1,
-  'experience': 0,
-  'immunities': [],
   'purse': {'copper': 0, 'silver': 0, 'gold': 100, 'platinum': 0, 'gems': 0},
-  'resistance': None,
-  'vulnerable': None,
   'powers': 
-    {'attacks':
-      ['Piercing Strike','Torturous Strike','Sly Strike'],
+    {'attacks': ['Piercing Strike','Torturous Strike','Sly Strike'],
     'utilities': [],
     'healing': []},
   'scores': 
@@ -515,59 +528,16 @@ PC_TEMPLATES = [
       'FORT':{'score':11,'config':{'base':10,'class':0,'race':0,'ability':1,'level':0,'armor':0,'item':0}}}},
   'hit_points':{'surge_recharge':12343,'hp':24,'surge':6},
   'items': 
-    {'implements': [],
-    'gear': [],
-    'armor':  
-      [{'name': 'Leather',
-      'description': None,
-      'group': 'Light',
-      'cost': 25,      
-      'attributes': [],
-      'casts': ['Barbarian','Fighter','Ranger','Rogue','Wizard','Cleric'],      
-      'magic': False,
-      'weight': 15,            
-      'slot': 'Body',
-      'ac_bonus': 2,
-      'min_bonus': 0,
-      'check': 0,
-      'speed': 0}],
+    {'gear': [],
+    'armor': ['Leather'],
     'rings': [],
-    'weapons': 
-      [{'name': 'Shortsword',
-      'description': None,
-      'level': 1,
-      'group': 'Light Blade',
-      'cost': 10,      
-      'attributes': ['Off-hand'],
-      'casts': ['Barbarian','Fighter','Ranger','Rogue','Cleric'],      
-      'magic': False,
-      'weight': 2,      
-      'short_range': 0,
-      'long_range': 0,            
-      'slot': 'One-hand',
-      'proficiency': 3,
-      'damage_dice': 1,
-      'damage_die': 6},
-      {'name': 'Dagger',
-      'description': None,
-      'level': 1,
-      'group': 'Light Blade',
-      'cost': 1,      
-      'attributes': ['Off-hand', 'Light Thrown'],
-      'casts': ['Barbarian','Fighter','Ranger','Rogue','Wizard','Cleric'],      
-      'magic': False,
-      'weight': 1,      
-      'short_range': 15,
-      'long_range': 20,            
-      'slot': 'One-hand',
-      'proficiency': 3,
-      'damage_dice': 1,
-      'damage_die': 4}],
+    'weapons': ['Shortsword','Dagger'],
     'artifacts': [],
     'potions': []},
   'speed': 6,
   'alignment': 'Good',
-  'size': 'Small'},  
+  'size': 'Small',
+  'languages': ['Common', 'Elven']},  
 
   ############################## PLAYER TEMPLATE 3 ###########################
   {'template_id': 3,
@@ -576,12 +546,7 @@ PC_TEMPLATES = [
   'race': 'Elf',
   'weight': 120,
   'height': 64,
-  'level': 1,
-  'experience': 0,
-  'immunities': [],
   'purse': {'copper': 0, 'silver': 0, 'gold': 100, 'platinum': 0, 'gems': 0},
-  'resistance': None,
-  'vulnerable': None,
   'powers': 
     {'attacks': ['Magic Missile','Ray of Frost','Burning Hands','Acid Arrow'],
     'utilities': [],
@@ -619,46 +584,16 @@ PC_TEMPLATES = [
       'FORT':{'score':11,'config':{'base':10,'class':0,'race':0,'ability':1,'level':0,'armor':0,'item':0}}}},
   'hit_points':{'surge_recharge':12343,'hp':22,'surge':5},
   'items': 
-    {'implements': [],
-    'gear': [],
-    'armor':  
-      [{'name': 'Cloth',
-      'description': None,
-      'group': 'Light',
-      'cost': 1,      
-      'attributes': [],
-      'casts': ['Barbarian','Fighter','Ranger','Rogue','Wizard','Cleric'],      
-      'magic': False,
-      'weight': 4,            
-      'slot': 'Body',
-      'ac_bonus': 0,
-      'min_bonus': 0,
-      'check': 0,
-      'speed': 0}],
+    {'gear': [],
+    'armor': ['Cloth'],
     'rings': [],
-    'weapons': 
-      [{'name': 'Staff of Defense',
-      'description': None,
-      'level': 1,
-      'group': 'Staff',
-      'cost': 5,      
-      'attributes': [],
-      'casts': ['Wizard'],      
-      'magic': False,
-      'weight': 4,      
-      'short_range': 0,
-      'long_range': 0,            
-      'slot': 'Two-hand',
-      'proficiency': 2,
-      'damage_dice': 1,
-      'damage_die': 8,
-      'bonus': 1,
-      'bonus_type': 'AC'}],
+    'weapons': ['Staff of Defense'],
     'artifacts': [],
     'potions': []},
   'speed': 6,
   'alignment': 'Good',
-  'size': 'Medium'},
+  'size': 'Medium',
+  'languages': ['Common', 'Elven']},
 
   ############################## PLAYER TEMPLATE 4 ###########################
   {'template_id': 4,
@@ -667,14 +602,9 @@ PC_TEMPLATES = [
   'race': 'Dwarf',
   'weight': 205,
   'height': 54,
-  'level': 1,
-  'experience': 0,
-  'immunities': [],
   'purse': {'copper': 0, 'silver': 0, 'gold': 100, 'platinum': 0, 'gems': 0},
-  'resistance': None,
-  'vulnerable': None,
   'powers': 
-    {'attacks': ['Weapon of Faith','Spoken Word','Flame of Vengance'],
+    {'attacks': ['Weapon of Faith','Spoken Word','Cleansing Flame'],
     'utilities': [],
     'healing': []},
   'scores': 
@@ -710,74 +640,14 @@ PC_TEMPLATES = [
       'FORT':{'score':13,'config':{'base':10,'class':0,'race':0,'ability':3,'level':0,'armor':0,'item':0}}}},
   'hit_points':{'surge_recharge':9600,'hp':26,'surge':6},
   'items': 
-    {'implements': [],
-    'gear': [],
-    'armor':  
-      [{'name': 'Chainmail',
-      'description': None,
-      'group': 'Heavy',
-      'cost': 40,      
-      'attributes': [],
-      'casts': ['Fighter','Cleric'],      
-      'magic': False,
-      'weight': 40,            
-      'slot': 'Body',
-      'ac_bonus': 6,
-      'min_bonus': 0,
-      'check': -1,
-      'speed': -1},
-      {'name': 'Light Shield',
-      'description': None,
-      'group': 'Shield',
-      'cost': 5,      
-      'attributes': [],
-      'casts': ['Fighter','Cleric'],      
-      'magic': False,
-      'weight': 6,            
-      'slot': 'One-Hand',
-      'ac_bonus': 1,
-      'min_bonus': 0,
-      'check': 0,
-      'speed': 0}],
+    {'gear': [],
+    'armor': ['Chainmail', 'Light Shield'],
     'rings': [],
-    'weapons': 
-      [{'name': 'Warhammer',
-      'description': None,
-      'level': 1,
-      'group': 'Hammer',
-      'cost': 5,      
-      'attributes': ['Versatile'],
-      'casts': ['Cleric','Fighter'],      
-      'magic': False,
-      'weight': 2,      
-      'short_range': 0,
-      'long_range': 0,            
-      'slot': 'One-hand',
-      'proficiency': 2,
-      'damage_dice': 1,
-      'damage_die': 10,
-      'bonus': 0,
-      'bonus_type': None},
-      {'name': 'Crossbow',
-      'description': None,
-      'level': 1,
-      'group': 'Crossbow',
-      'cost': 25,      
-      'attributes': ['Load Minor'],
-      'casts': ['Cleric','Fighter','Ranger','Rogue','Barbarian'],      
-      'magic': False,
-      'weight': 4,      
-      'short_range': 20,
-      'long_range': 40,            
-      'slot': 'Two-hand',
-      'proficiency': 2,
-      'damage_dice': 1,
-      'damage_die': 8,
-      'bonus': 0,
-      'bonus_type': None}],
+    'weapons': ['Warhammer', 'Crossbow'],
     'artifacts': [],
     'potions': []},
   'speed': 5,
   'alignment': 'Good',
-  'size': 'Medium'}]
+  'size': 'Medium',
+  'languages': ['Common', 'Dwarven']}]
   
