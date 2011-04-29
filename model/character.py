@@ -30,6 +30,11 @@ DAILY = 43200
 ######################## METHODS #############################################
 ##############################################################################
 def getJSONPlayer(player):
+    '''Returns a PlayerCharacter or PlayerCharacterTemplate as JSON.
+    '''
+    _trace = TRACE + 'getJSONPlayer() '
+    logging.info(_trace)
+    logging.info(_trace + 'player = ' + player.name)
     json = {'name': player.name, 'level': player.level, 'race': player.race,
             'alignment': player.alignment, 'size': player.size, 
             'experience': player.experience, 'speed': player.speed, 
@@ -37,14 +42,16 @@ def getJSONPlayer(player):
             'height': player.height, 'weight': player.weight, 
             'scores': player.scores, 'created': str(player.created), 
             'purse': player.purse, 'resist': player.resist,
-            'vulnerable': player.vulnerable, 'id': str(player.key().id())}
-            
+            'vulnerable': player.vulnerable, 'key': str(player.key())}
+
+    logging.info(_trace + 'json = ' + str(json))            
     # Construct JSON for Player Powers
     powers = db.get(player.powers)
     attacks = []
     utilities = []
     healing = [] 
     for p in powers:
+        logging.info(_trace + 'power = ' + str(p))
         if p.class_name() == models.ATT:
             attacks.append(p.json)   
         elif p.class_name() == models.UTL:
@@ -201,6 +208,37 @@ def createPlayer(self):
                                     scores = scores)
     db.put(player)
     return player
+
+def createPlayerFromTemplate(character_key, self, user):
+    '''Creates a new Player Character from a Player Character Template.
+    ''' 
+    _trace = TRACE + 'createPlayerFromTemplate():: '
+    logging.info(_trace)
+    pc_template = db.get(character_key)
+    if pc_template is None: return None
+    player = models.Player(name = self.request.get('name'),
+                           level = pc_template.level,
+                           race = pc_template.race,
+                           alignment = pc_template.alignment,
+                           size = pc_template.size,
+                           experience = pc_template.experience,
+                           speed = pc_template.speed,
+                           items = pc_template.items,
+                           hit_points = pc_template.hit_points,
+                           scores = pc_template.scores,
+                           languages = pc_template.languages,
+                           immunities = pc_template.immunities,
+                           resist = pc_template.resist,
+                           vulnerable = pc_template.vulnerable,
+                           cast = pc_template.cast,
+                           height = pc_template.height,
+                           weight = pc_template.weight,
+                           powers = pc_template.powers,
+                           equipped = pc_template.equipped,
+                           purse = pc_template.purse,
+                           user = user )
+
+    return player
         
 def buildScores(self, cat_key, attr_keys):
     scores = {}
@@ -352,10 +390,23 @@ def setScore(scores, cat_key, keyword, score):
     scores[cat_key][keyword]['score'] = score       
     return scores
 
-def seedPlayerCharacters():
+def getJSONPlayerCharacterTemplates():
+    '''Returns all PlayerCharacterTemplates as JSON.
+    '''
+    _trace = TRACE+'getJSONPlayerCharactersTemplates() '
+    logging.info(_trace)    
+    templates = models.PlayerCharacterTemplate.all().fetch(10)
+    json = []
+    for t in templates:
+        character = getJSONPlayer(t)
+        json.append(character)
+        
+    return json
+    
+def seedPlayerCharacterTemplates():
     '''Primes the datastore with PlayerCharacter templates.
     '''
-    _trace = TRACE+'seedPlayerCharacters() '
+    _trace = TRACE+'seedPlayerCharactersTemplates() '
     logging.info(_trace)
     pc_templates = []   
     for x in PC_TEMPLATES:    
@@ -369,30 +420,14 @@ def seedPlayerCharacters():
         for k in keys:
             _dict = x['powers'][k]
             for name in _dict:
-                if k == 'attacks':
-                    key = db.Key.from_path('Attack', name)
-                elif k == 'utilities':
-                    key = db.Key.from_path('Utility', name)                    
-                elif k == 'healing':
-                    key = db.Key.from_path('Heal', name)
+                key = db.Key.from_path('Power', name)
                 powers.append(key)    
                         
         keys = x['items'].keys()
         for k in keys:
             _dict = x['items'][k]
             for name in _dict:
-                if k == 'gear':
-                    key = db.Key.from_path('Gear', name)
-                elif k == 'armor':
-                    key = db.Key.from_path('Armor', name)                    
-                elif k == 'rings':
-                    key = db.Key.from_path('Ring', name)                    
-                elif k == 'weapons':
-                    key = db.Key.from_path('Weapon', name)                    
-                elif k == 'artifacts':
-                    key = db.Key.from_path('Artifact', name)                    
-                elif k == 'potions':
-                    key = db.Key.from_path('Potion', name)
+                key = db.Key.from_path('Item', name)
                 items.append(key)
                 
         for a in x['languages']:

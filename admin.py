@@ -66,7 +66,7 @@ class InitAdmin(webapp.RequestHandler):
         elif method == "attacks": 
             r = power.seedAttacks()
         elif method == "pc_templates":
-            r = character.seedPlayerCharacters()                            
+            r = character.seedPlayerCharacterTemplates()                            
         elif method == "bonuses": 
             r = seed.seedBonuses()
         elif method == "npcs": 

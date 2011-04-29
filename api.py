@@ -23,6 +23,7 @@ import os
 import logging
 
 from django.utils import simplejson
+from google.appengine.api import oauth
 from google.appengine.ext import db
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp.util import run_wsgi_app
@@ -30,41 +31,71 @@ from google.appengine.ext.webapp.util import run_wsgi_app
 ############################# CODES ##########################################
 ##############################################################################
 
-API200 = {"status": "200 OK", "code": "/api/status/ok"}
-API403 = {"status": "403 Forbidden", "code": "/api/status/error"}
-API404 = {"status": "404 Not Found", "code": "/api/status/error"}
-API500 = {"status": "500 Internal Server Error", "code": "/api/status/error"}
+API200 = {'status': '200 OK', 'code': '/api/status/ok'}
+API401 = {'status': '401 Unauthorized', 'code': '/api/status/error', 
+          'message': 'Not authorized to access the app, or did not provide valid OAuth information'}
+
+API403 = {'status': '403 Forbidden', 'code': '/api/status/error'}
+API404 = {'status': '404 Not Found', 'code': '/api/status/error'}
+API500 = {'status': '500 Internal Server Error', 'code': '/api/status/error'}
 MSG = 'message'
 
 ############################# REQUEST HANDLERS ############################### 
 ##############################################################################
 class APIPlayer(webapp.RequestHandler):
-    """Provides API access to Player Character data.  Responses are in JSON.
-    """
-    def get(self, player_id):
-        logging.info(TRACE+'APIPlayer:: get()')
-        i = utils.strToInt(player_id)
-        player = models.PlayerCharacter.get_by_id(i)
+    '''Provides API access to Player Character CRUD.  Responses are in JSON.
+    '''
+    def get(self, character_key):
+        '''Returns a Player Character for the 
+        '''    
+        _trace = TRACE+'APIPlayer:: get() '
+        logging.info(_trace)
+        player = db.get(character_key)
         r = API200
         r[MSG] = 'A hero?'        
         r[player.class_name()] = character.getJSONPlayer(player)
         return self.response.out.write(simplejson.dumps(r))
         
-    def post(self, method):
-        logging.info(TRACE+'APIPlayer:: post()')
-        if method == 'new': 
+    def post(self, character_key):
+        '''Create a new Player Character.  If the character_key is 0, create 
+        a new custom Player Character, otherwise create a new Player 
+        Character based on the PlayerCharacterTemplate corresponding to the 
+        character_key.
+        '''    
+        _trace = TRACE+'APIPlayer:: post() '
+        logging.info(_trace)
+        try:
+            user = oauth.get_current_user()
+            logging.info(_trace + 'user = ' + str(user))
+        except oauth.OAuthRequestError, e:
+            logging.info(_trace + e)               
+            r = API401
+            return self.response.out.write(simplejson.dumps(r))  
+                 
+        if template_key == '0': 
+            r = API404
+            '''
             r = API200
             player = character.createPlayer(self)
             r[MSG] = 'This one won\'t last long I fear.'
             r[player.class_name()] = character.getJSONPlayer(player)
+            '''
+            r[MSG] = 'Custom Player Characters not allowed at this time.'
         else: 
-            r = API404
-            r[MSG] = 'New Player was not created.'
+            player = character.createPlayerFromTemplate(character_key, 
+                                                        self, user)
+                                                         
+            if player is not None:
+                r = API200
+                r[player.class_name()] = character.getJSONPlayer(player)
+            else:    
+                r = API404
+                r[MSG] = 'Template not found.'
         return self.response.out.write(simplejson.dumps(r)) 
 
 class APINonPlayer(webapp.RequestHandler):
-    """Provides API access to NonPlayer Character data. Responses are in JSON.
-    """
+    '''Provides API access to NonPlayer Character data. Responses are in JSON.
+    '''
     def get(self, nonplayer_id):
         logging.info(TRACE+'APINonPlayer:: get()')
         i = utils.strToInt(nonplayer_id)
@@ -82,8 +113,8 @@ class APINonPlayer(webapp.RequestHandler):
         return self.response.out.write(simplejson.dumps(r))
 
 class APIError(webapp.RequestHandler):
-    """Provides basic API error Response in JSON.
-    """
+    '''Provides basic API error Response in JSON.
+    '''
     def get(self, foo):
         r = API404
         return self.response.out.write(simplejson.dumps(r)) 
@@ -93,8 +124,8 @@ class APIError(webapp.RequestHandler):
         return self.response.out.write(simplejson.dumps(r)) 
         
 class APIPlayerItem(webapp.RequestHandler):
-    """Provides API access to Player Item data.  Responses are in JSON.
-    """
+    '''Provides API access to Player Item data.  Responses are in JSON.
+    '''
     def get(self, type, method):
         r = API404
         return self.response.out.write(simplejson.dumps(r)) 
@@ -116,8 +147,8 @@ class APIPlayerItem(webapp.RequestHandler):
         return self.response.out.write(simplejson.dumps(r))   
 
 class APIPlayerPower(webapp.RequestHandler):
-    """Provides API access to Player Power data.  Responses are in JSON.
-    """
+    '''Provides API access to Player Power data.  Responses are in JSON.
+    '''
     def get(self, type, method):
         r = API404
         return self.response.out.write(simplejson.dumps(r)) 
@@ -126,7 +157,7 @@ class APIPlayerPower(webapp.RequestHandler):
         logging.info(TRACE+'APIPlayerPower:: post()')
         r = API404
         if model == models.ATT.lower():
-            if method == "add":
+            if method == 'add':
                 player_id = self.request.get('player_id')
                 name = self.request.get('attack_name')
                 player = character.addToPlayer(models.Attack, name, player_id)
@@ -139,8 +170,8 @@ class APIPlayerPower(webapp.RequestHandler):
         return self.response.out.write(simplejson.dumps(r)) 
 
 class APIPlayerAction(webapp.RequestHandler):
-    """Provides API access to Player Actions.  Responses are in JSON.
-    """
+    '''Provides API access to Player Actions.  Responses are in JSON.
+    '''
     def get(self, type, method):
         r = API404
         return self.response.out.write(simplejson.dumps(r)) 
@@ -200,11 +231,21 @@ class APIPlayerAction(webapp.RequestHandler):
 
         return self.response.out.write(simplejson.dumps(r))
 
+class APIPlayerTemplate(webapp.RequestHandler):
+    '''Provides API access to Player Character Templates.  Responses are in 
+    JSON.
+    '''
+    def get(self):
+        _trace = TRACE+'APIPlayer:: get() '
+        logging.info(_trace)
+        r = API200
+        r['templates'] = character.getJSONPlayerCharacterTemplates()
+        return self.response.out.write(simplejson.dumps(r))
 
 class APIParty(webapp.RequestHandler):
-    """Provides API access to Party, PlayerParty and NonPlayerParty data.
+    '''Provides API access to Party, PlayerParty and NonPlayerParty data.
     Responses are in JSON.
-    """
+    '''
     def get(self, method):
         r = API404
         logging.info(TRACE+'APIParty:: get()')
@@ -238,10 +279,10 @@ class APIParty(webapp.RequestHandler):
 ######################## METHODS #############################################
 ##############################################################################
 def logEncounterCheck(player_party, encounter=False):
-    """
+    '''
     {'encounters': {'count': 23, 'uniques': 2, 'start_time': POSIX
                    'last_encounter': {'time_since': POSIX, 'checks': 9}}}
-    """
+    '''
     return None
                      
 ##############################################################################
@@ -252,6 +293,8 @@ application = webapp.WSGIApplication([(r'/api/character/player/item/(.*)/(.*)',
                                        APIPlayerPower), 
                                       (r'/api/character/player/action/(.*)', 
                                        APIPlayerAction),                                       
+                                      (r'/api/character/player/templates', 
+                                       APIPlayerTemplate),
                                       (r'/api/character/player/(.*)', 
                                        APIPlayer),
                                       (r'/api/character/nonplayer/(.*)', 

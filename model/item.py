@@ -313,7 +313,7 @@ WEAPON_DATA = [
   'group': 'Hammer',
   'attributes': ['Versatile'],
   'category': 'Martial Melee',
-  'casts': ['Fighter'],
+  'casts': ['Cleric', 'Fighter'],
   'magic': False},
   {'name': 'Greataxe',
   'proficiency': 2,
