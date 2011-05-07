@@ -333,33 +333,91 @@ class APIParties(APIBase):
         '''
         _trace = TRACE+'APIParties:: post() '
         logging.info(_trace)  
-        
-        '''Character from Party X attacks character(s) from Party Z using Item 
-        or Power      
-        '''
-        if action == 'attack':
+        party = db.get(key)
+        if party is not None and party.class_name() == 'Party':
             
+            '''Character from Party X attacks character(s) from Party Z using 
+            Item or Power      
+            '''
+            if action == 'attack':
+                try:
+                    player_key = self.request.get('player_key')
+                    enemy_character_keys self.request.get('character_keys')
+                    enemy_party_key = self.request.get('party_key')
+                    attack_type = self.request.get('attack_type')
+                    attack_key = self.request.get('attack_key')
+                except AttributeError:
+                    r = API400
+                    r[MSG] = 'Request is missing one or more parameters.' 
+                
+                # Get Player
+                player = db.get(player_key)
+                if player is None or player.class_name() != 'Character':
+                    r = API404
+                    r[MSG] = 'Player not found for player_key '+player_key+' .'                            
+                    return self.response.out.write(simplejson.dumps(r))   
+                
+                # Get Attack                
+                attack = db.get(attack_key)
+                if attack_type == 'item':
+                    if attack is None or attack.class_name() != 'Item':
+                        r = API404
+                        r[MSG] = 'Item not found for attack_key '+attack_key+' .'                            
+                        return self.response.out.write(simplejson.dumps(r))
+                elif attack_type == 'power':
+                    if attack is None or attack.class_name() != 'Power':
+                        r = API404
+                        r[MSG] = 'Power not found for attack_key '+attack_key+' .'                            
+                        return self.response.out.write(simplejson.dumps(r))
+                else:
+                    r = API400
+                    r[MSG] = 'Invalid \'attack_type\'.'                             
+                    return self.response.out.write(simplejson.dumps(r))  
+                
+                # Get enemy Party
+                enemy_party = db.get(enemy_party_key)
+                if party is None or party.class_name() != 'Party':
+                    r = API404
+                    r[MSG] = 'Party not found for party_key '+party_key+' .'                            
+                    return self.response.out.write(simplejson.dumps(r))
+                
+                # Get enemy Characters  
+                enemies = []
+                for e in enemy_character_keys:
+                    enemy = db.get(e)
+                    if enemy is None or enemy.class_name() != 'Character':
+                        r = API404
+                        r[MSG] = 'Character not found for character_key '+e+' .'                            
+                        return self.response.out.write(simplejson.dumps(r))
+                    else:
+                        enemies.append(enemy)
+                
+                                                                          
+                    
+            '''Character from Party X checkins in at a location seeking 
+            Parties.
+            '''
+            elif action == 'quest':
+                # get character a, party a, location.            
             
-            pass
+                pass
             
-        '''Character from Party X checkins in at a location seeking Parties.
-        '''
-        elif action == 'quest':
+            '''Character from Party X sends a message to character(s) in 
+            Party Z.
+            '''    
+            elif action == 'greet':
+                # get character a, party a, party b, location, skill.                 
             
+                pass
             
-            pass
-            
-        '''Character from Party X sends a message to character(s) in Party Z.
-        '''    
-        elif action == 'greet':
-            
-            
-            pass
-            
-        else:
-            r = API400
-            r[MSG] = 'Invalid action \'action\'.'       
+            else:
+                r = API400
+                r[MSG] = 'Invalid action \'action\'.'       
 
+        else:
+            r = API404
+            r[MSG] = 'Party not found for key '+key+' .'
+                    
         return self.response.out.write(simplejson.dumps(r))                             
 
 
