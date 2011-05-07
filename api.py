@@ -30,12 +30,9 @@ from google.appengine.ext.webapp.util import run_wsgi_app
 
 ############################# CODES ##########################################
 ##############################################################################
-
 API200 = {'status': '200 OK', 'code': '/api/status/ok'}
 API400 = {'status': '400 Bad Request', 'code': '/api/status/error'}
-API401 = {'status': '401 Unauthorized', 'code': '/api/status/error', 
-          'message': 'Not authorized to access the app, or did not provide valid OAuth information'}
-
+API401 = {'status': '401 Unauthorized', 'code': '/api/status/error'}
 API404 = {'status': '404 Not Found', 'code': '/api/status/error'}
 API405 = {'status': '405 Method Not Allowed', 'code': '/api/status/error'}
 API422 = {'status': '422 Unprocessable Entity', 'code': '/api/status/error'}
@@ -69,10 +66,12 @@ class APIBase(webapp.RequestHandler):
             r = API400
         if code == 401:
             r = API401
-        elif code == 403:
-            r = API403
         elif code == 404:
             r = API404
+        elif code == 405:
+            r = API405
+        elif code == 422:
+            r = API422
         else:
             r = API500
         return self.response.out.write(simplejson.dumps(r))                  
@@ -108,7 +107,7 @@ class APIPlayerCharacters(APIBase):
         _trace = TRACE+'APIPlayerCharacters:: get() '
         logging.info(_trace)        
         character = db.get(key)
-        if character is not None:
+        if character is not None and character.class_name() == 'Character':
             r = API200
             r[MSG] = 'A hero returns!'
             r[character.class_name()] = character.getJSONPlayer(player)
@@ -119,10 +118,35 @@ class APIPlayerCharacters(APIBase):
         return self.response.out.write(simplejson.dumps(r)) 
     
     def put(self, key):
-        return
-    
+        '''Updates a PlayerCharacter and Returns the new PlayerCharacter data. 
+        '''
+        _trace = TRACE+'APIPlayerCharacters:: put() '
+        logging.info(_trace)        
+        character = db.get(key) 
+        if character is not None:
+            # TODO
+            pass
+        else:
+            r = API404
+            r[MSG] = 'PlayerCharacter not found for key '+key+' .'              
+        
+        return self.response.out.write(simplejson.dumps(r)) 
+            
     def delete(self, key):
-        return
+        '''Deletes a PlayerCharacter. 
+        '''
+        _trace = TRACE+'APIPlayerCharacters:: delete() '
+        logging.info(_trace)        
+        character = db.get(key) 
+        if character is not None and character.class_name() == 'Character':
+            character.delete()
+            r = API200
+            r[MSG] = 'The funeral pyre burns bright.'
+        else:
+            r = API404
+            r[MSG] = 'PlayerCharacter not found for key '+key+' .'              
+        
+        return self.response.out.write(simplejson.dumps(r))
 
 class APINonPlayerCharacters(APIBase):
     def get(self, key):
@@ -131,7 +155,7 @@ class APINonPlayerCharacters(APIBase):
         _trace = TRACE+'APINonPlayerCharacters:: get() '
         logging.info(_trace)        
         character = db.get(key)
-        if character is not None:
+        if character is not None and character.class_name() == 'Character':
             r = API200
             r[MSG] = 'A villian returns!'
             r[character.class_name()] = character.getJSONNonPlayer(player)
@@ -142,10 +166,36 @@ class APINonPlayerCharacters(APIBase):
         return self.response.out.write(simplejson.dumps(r)) 
     
     def put(self, key):
-        return
+        '''Updates a NonPlayerCharacter and Returns the new 
+        NonPlayerCharacter data. 
+        '''
+        _trace = TRACE+'APINonPlayerCharacters:: put() '
+        logging.info(_trace)        
+        character = db.get(key) 
+        if character is not None:
+            # TODO
+            pass
+        else:
+            r = API404
+            r[MSG] = 'NonPlayerCharacter not found for key '+key+' .'              
+        
+        return self.response.out.write(simplejson.dumps(r))
     
     def delete(self, key):
-        return
+        '''Deletes a NonPlayerCharacter. 
+        '''
+        _trace = TRACE+'APINonPlayerCharacters:: delete() '
+        logging.info(_trace)        
+        character = db.get(key) 
+        if character is not None and character.class_name() == 'Character':
+            character.delete()
+            r = API200
+            r[MSG] = 'The world is a better place now that this one is gone.'
+        else:
+            r = API404
+            r[MSG] = 'NonPlayerCharacter not found for key '+key+' .'              
+        
+        return self.response.out.write(simplejson.dumps(r))
 
 class APITemplates(APIBase):
     def get(self, _class):
@@ -184,26 +234,133 @@ class APITemplates(APIBase):
              r[MSG] = 'A quiver of monsters.'
              r['NonPlayerCharacterTemplates'] = data
         else:
-            r = API404
+            r = API400
             r[MSG] = 'Invalid class \'_class\', no templates found.'  
         
         return self.response.out.write(simplejson.dumps(r))
 
 class APICreateParties(APIBase):
     def post(self):
+        '''Creates and Returns a new Party.
         '''
-        '''
-        return
+        _trace = TRACE+'APICreateParties:: post() '
+        logging.info(_trace)       
+        try:
+            key = self.request.get('character_key')
+        except AttributeError:
+            r = API400
+            r[MSG] = 'Missing \'character_key\' parameter.'
+        
+        character = db.get(key)
+        if character is not None and character.class_name() == 'Character':
+            party = party.createJSONParty(character)
+            r = API200
+            r[MSG] = 'It is gold and adventure you seek?'
+            r[party.class_name()] = party
+        else:
+            r = API404
+            r[MSG] = 'Character not found for key '+key+' .'
+                
+        return self.response.out.write(simplejson.dumps(r)) 
         
 class APIParties(APIBase):
     def get(self, key):
-        return
+        '''Returns the Party.
+        '''
+        _trace = TRACE+'APIParties:: get() '
+        logging.info(_trace)        
+        party = db.get(key)
+        if party is not None and party.class_name() == 'Party':
+            r = API200
+            r[MSG] = 'Adventure a party makes.'
+            r[party.class_name()] = party.getJSONParty(party)
+        else:
+            r = API404
+            r[MSG] = 'Party not found for key '+key+' .'  
+              
+        return self.response.out.write(simplejson.dumps(r))
     
     def put(self, key):
-        return
+        '''Adds a Character to a Party.
+        '''
+        _trace = TRACE+'APIParties:: put() '
+        logging.info(_trace)        
+        party = db.get(key)        
+        if party is not None and party.class_name() == 'Party':
+            try:
+                character_key = self.request.get('character_key')
+            except AttributeError:
+                r = API400
+                r[MSG] = 'Missing \'character_key\' parameter.'
+            
+            character = db.get(character_key)
+            if character is not None and character.class_name() == 'Character':
+                party = party.updateJSONParty(party, character)
+                r = API200
+                r[MSG] = 'The party grows stronger!'
+                r[party.class_name()] = party
+            else:
+                  r = API404
+                  r[MSG] = 'Character not found for key '+character_key+' .'                  
+            
+            r = API200
+            r[MSG] = 'Adventure a party makes.'
+            r[party.class_name()] = party.getJSONParty(party)
+        else:
+            r = API404
+            r[MSG] = 'Party not found for key '+key+' .'  
+              
+        return self.response.out.write(simplejson.dumps(r))
     
     def delete(self, key):
-        return                        
+        '''Deletes a Party. 
+        '''
+        _trace = TRACE+'APIParties:: delete() '
+        logging.info(_trace)        
+        party = db.get(key) 
+        if party is not None and party.class_name() == 'Party':
+            party.delete()
+            r = API200
+            r[MSG] = 'The quest has been abandoned.'
+        else:
+            r = API404
+            r[MSG] = 'Party not found for key '+key+' .'              
+        
+        return self.response.out.write(simplejson.dumps(r)) 
+        
+    def post(self, key, action):
+        '''Invokes an action on a particular Party.
+        '''
+        _trace = TRACE+'APIParties:: post() '
+        logging.info(_trace)  
+        
+        '''Character from Party X attacks character(s) from Party Z using Item 
+        or Power      
+        '''
+        if action == 'attack':
+            
+            
+            pass
+            
+        '''Character from Party X checkins in at a location seeking Parties.
+        '''
+        elif action == 'quest':
+            
+            
+            pass
+            
+        '''Character from Party X sends a message to character(s) in Party Z.
+        '''    
+        elif action == 'greet':
+            
+            
+            pass
+            
+        else:
+            r = API400
+            r[MSG] = 'Invalid action \'action\'.'       
+
+        return self.response.out.write(simplejson.dumps(r))                             
 
 
 ######## OLD STUFF BELOW 
@@ -528,8 +685,10 @@ application = webapp.WSGIApplication([(r'/api/playercharacters',
                                        APITemplates),
                                       (r'/api/parties', 
                                        APICreateParties),
+                                      (r'/api/parties/(.*)/(.*)', 
+                                       APIParties),                                   
                                       (r'/api/parties/(.*)', 
-                                       APIParties)                                   
+                                       APIParties)
                                      ],
                                      debug=DEBUG)
 
