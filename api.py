@@ -336,14 +336,12 @@ class APIParties(APIBase):
         party = db.get(key)
         if party is not None and party.class_name() == 'Party':
             
-            '''Character from Party X attacks character(s) from Party Z using 
-            Item or Power      
+            '''Character attacks character(s) in Party Z using Item or Power      
             '''
             if action == 'attack':
                 try:
                     player_key = self.request.get('player_key')
                     enemy_character_keys self.request.get('character_keys')
-                    enemy_party_key = self.request.get('party_key')
                     attack_type = self.request.get('attack_type')
                     attack_key = self.request.get('attack_key')
                 except AttributeError:
@@ -374,13 +372,6 @@ class APIParties(APIBase):
                     r[MSG] = 'Invalid \'attack_type\'.'                             
                     return self.response.out.write(simplejson.dumps(r))  
                 
-                # Get enemy Party
-                enemy_party = db.get(enemy_party_key)
-                if party is None or party.class_name() != 'Party':
-                    r = API404
-                    r[MSG] = 'Party not found for party_key '+party_key+' .'                            
-                    return self.response.out.write(simplejson.dumps(r))
-                
                 # Get enemy Characters  
                 enemies = []
                 for e in enemy_character_keys:
@@ -392,23 +383,32 @@ class APIParties(APIBase):
                     else:
                         enemies.append(enemy)
                 
-                                                                          
+                damage = party.getJSONAttack(party, enemies, 
+                                             attacker, attack_type, attack)
+                
+                r = API200
+                r[MSG] = 'Smite thy enemies!'
+                r['Damage'] = damage                                                                             
                     
-            '''Character from Party X checkins in at a location seeking 
-            Parties.
+            '''Character checkins in at a location seeking Parties, Traps or
+            Events.
             '''
             elif action == 'quest':
-                # get character a, party a, location.            
+
             
-                pass
+                parties = party.getJSONParties(party, player, location)
+                r = API200
+                r[MSG] = 'Who goes there?'
+                r['Parties'] = parties
             
-            '''Character from Party X sends a message to character(s) in 
-            Party Z.
+            '''Character sends a message to character(s) in a Party.
             '''    
             elif action == 'greet':
                 # get character a, party a, party b, location, skill.                 
             
-                pass
+                party.sendPartyMessage(party, player, message)
+                r = API200
+                r[MSG] = 'Do you speak Draconic?'
             
             else:
                 r = API400
