@@ -32,17 +32,257 @@ from google.appengine.ext.webapp.util import run_wsgi_app
 ##############################################################################
 
 API200 = {'status': '200 OK', 'code': '/api/status/ok'}
+API400 = {'status': '400 Bad Request', 'code': '/api/status/error'}
 API401 = {'status': '401 Unauthorized', 'code': '/api/status/error', 
           'message': 'Not authorized to access the app, or did not provide valid OAuth information'}
 
-API403 = {'status': '403 Forbidden', 'code': '/api/status/error'}
 API404 = {'status': '404 Not Found', 'code': '/api/status/error'}
+API405 = {'status': '405 Method Not Allowed', 'code': '/api/status/error'}
+API422 = {'status': '422 Unprocessable Entity', 'code': '/api/status/error'}
 API500 = {'status': '500 Internal Server Error', 'code': '/api/status/error'}
 MSG = 'message'
 
 ############################# REQUEST HANDLERS ############################### 
 ##############################################################################
-class APIPlayer(webapp.RequestHandler):
+class APIBase(webapp.RequestHandler):
+    _trace = TRACE+'APIBase:: '
+    logging.info(_trace)
+    @property
+    def current_user(self):
+        '''Returns an authenticated User.  Or an Exception if the User is not
+        properly authenticated.
+        '''
+        try:
+            user = oauth.get_current_user()
+            logging.info(_trace + 'user = ' + str(user))
+            return user
+        except oauth.OAuthRequestError:    
+            logging.info(_trace + 'OAuthRequestError!')
+            raise
+    
+    def error(self, code):
+        '''Overide RequestHandler.error to return custom error templates.
+        '''
+        self.response.clear()
+        self.response.set_status(code)
+        if code == 400:
+            r = API400
+        if code == 401:
+            r = API401
+        elif code == 403:
+            r = API403
+        elif code == 404:
+            r = API404
+        else:
+            r = API500
+        return self.response.out.write(simplejson.dumps(r))                  
+        
+class APICreatePlayerCharacters(APIBase):
+    def post(self):
+        '''Creates a new Player Character.
+        '''
+        _trace = TRACE+'APICreatePlayerCharacters:: post() '
+        logging.info(_trace)        
+        key = self.request.get('key')
+        template = db.get('key')
+        if template is not None:
+            try:
+                name = self.request.get('name')
+            except AttributeError:
+                r = API400
+                r[MSG] = 'Missing \'name\' parameter.'              
+            player = character.createPlayerFromTemplate(key, name, user)
+            r = API200
+            r[MSG] = 'Fortune favors the bold!'
+            r[character.class_name()] = character.getJSONPlayer(player)
+        else:    
+            r = API404
+            r[MSG] = 'Template not found for key '+key+' .'
+        
+        return self.response.out.write(simplejson.dumps(r)) 
+        
+class APIPlayerCharacters(APIBase):
+    def get(self, key):
+        '''Returns a PlayerCharacter provided a key.
+        '''
+        _trace = TRACE+'APIPlayerCharacters:: get() '
+        logging.info(_trace)        
+        character = db.get(key)
+        if character is not None:
+            r = API200
+            r[MSG] = 'A hero returns!'
+            r[character.class_name()] = character.getJSONPlayer(player)
+        else:
+            r = API404
+            r[MSG] = 'PlayerCharacter not found for key '+key+' .'  
+              
+        return self.response.out.write(simplejson.dumps(r)) 
+    
+    def put(self, key):
+        return
+    
+    def delete(self, key):
+        return
+
+class APINonPlayerCharacters(APIBase):
+    def get(self, key):
+        '''Returns a NonPlayerCharacter provided a key.
+        '''
+        _trace = TRACE+'APINonPlayerCharacters:: get() '
+        logging.info(_trace)        
+        character = db.get(key)
+        if character is not None:
+            r = API200
+            r[MSG] = 'A villian returns!'
+            r[character.class_name()] = character.getJSONNonPlayer(player)
+        else:
+            r = API404
+            r[MSG] = 'NonPlayerCharacter not found for key '+key+' .'  
+              
+        return self.response.out.write(simplejson.dumps(r)) 
+    
+    def put(self, key):
+        return
+    
+    def delete(self, key):
+        return
+
+class APITemplates(APIBase):
+    def get(self, _class):
+        '''Returns all PlayerCharacter or NonPlayerCharacterTemplates 
+        available for use.
+        '''
+        _trace = TRACE+'APITemplates:: get() '
+        logging.info(_trace)        
+        model = None
+        _class_name = None
+        if _class = 'pc':
+            templates = models.PlayerCharacterTemplates.all().fetch(100)    
+            data = []
+            for t in templates:
+                data[t.key().id_or_name()] = {'name': t.name, 
+                                              'race': t.race,
+                                              'cast': t.cast,
+                                              'level': t.level}
+            
+             r = API200
+             r[MSG] = 'A quiver of characters.'
+             r['PlayerCharacterTemplates'] = data
+                                                          
+        elif _class = 'npc':
+            templates = models.NonPlayerCharacterTemplates.all().fetch(100)    
+            data = []
+            for t in templates:
+                data[t.key().id_or_name()] = {'name': t.name, 
+                                              'race': t.race,
+                                              'level': t.level,
+                                              'role': t.role,
+                                              'challenge': t.challenge,
+                                              'unique': t.unique}
+            
+             r = API200
+             r[MSG] = 'A quiver of monsters.'
+             r['NonPlayerCharacterTemplates'] = data
+        else:
+            r = API404
+            r[MSG] = 'Invalid class \'_class\', no templates found.'  
+        
+        return self.response.out.write(simplejson.dumps(r))
+
+class APICreateParties(APIBase):
+    def post(self):
+        '''
+        '''
+        return
+        
+class APIParties(APIBase):
+    def get(self, key):
+        return
+    
+    def put(self, key):
+        return
+    
+    def delete(self, key):
+        return                        
+
+
+######## OLD STUFF BELOW 
+
+            
+class APIPlayerCharacterTemplates(APIBase):
+    def get(self):
+        '''Returns all PlayerCharacterTemplates.
+        '''
+        _trace = TRACE+'APIPlayerCharacterTemplates:: get() '
+        logging.info(_trace)
+        try:
+            user = self.current_user()
+        except:
+            r = API401
+            return self.response.out.write(simplejson.dumps(r))
+        
+        r = API200
+        templates = character.getJSONPlayerCharacterTemplates()
+        r['player_character_templates'] = templates
+        return self.response.out.write(simplejson.dumps(r))                            
+        
+class APIPlayerCharacter(APIBase):
+    def get(self, key):
+        '''Returns a PlayerCharacter for the given key.
+        '''
+        _trace = TRACE+'APIPlayerCharacter:: get() '
+        logging.info(_trace)
+        try:
+            user = self.current_user()
+        except:
+            r = API401
+            return self.response.out.write(simplejson.dumps(r))
+                    
+        player = db.get(character_key)
+        if player is None:
+            r = API404
+            r[MSG] = 'Player not found.'
+        else:
+            r = API200
+            r[MSG] = 'A hero?'        
+            r['player_character'] = character.getJSONPlayer(player)
+        return self.response.out.write(simplejson.dumps(r))    
+
+class APIPlayerParty(APIBase):
+    
+    def post(self):
+        '''Returns a new PlayerParty for a PlayerCharacter.
+        ''' 
+        return
+        
+class APINonPlayerParty(APIBase):
+    
+    def post(self):
+        '''Returns a new NonPlayerParty if there are Monsters in the area.
+        '''  
+        return
+
+    def put(self):
+        '''Returns an updated NonPlayerParty after and any damage applied.
+        '''
+        
+class APICharacterPlayerAction(APIBase):
+    def get(self, key, action):
+        '''Returns action data.
+        '''
+        try:
+            user = self.current_user()
+        except:
+            r = API401
+            return self.response.out.write(simplejson.dumps(r))
+        
+        if action == 'adventure':
+        
+        else:
+            r = API404
+            r[MSG] = 'Action not found.'                            
+
+class APIPlayerFOO(webapp.RequestHandler):
     '''Provides API access to Player Character CRUD.  Responses are in JSON.
     '''
     def get(self, character_key):
@@ -231,16 +471,7 @@ class APIPlayerAction(webapp.RequestHandler):
 
         return self.response.out.write(simplejson.dumps(r))
 
-class APIPlayerTemplate(webapp.RequestHandler):
-    '''Provides API access to Player Character Templates.  Responses are in 
-    JSON.
-    '''
-    def get(self):
-        _trace = TRACE+'APIPlayer:: get() '
-        logging.info(_trace)
-        r = API200
-        r['templates'] = character.getJSONPlayerCharacterTemplates()
-        return self.response.out.write(simplejson.dumps(r))
+
 
 class APIParty(webapp.RequestHandler):
     '''Provides API access to Party, PlayerParty and NonPlayerParty data.
@@ -287,41 +518,20 @@ def logEncounterCheck(player_party, encounter=False):
                      
 ##############################################################################
 ##############################################################################
-application = webapp.WSGIApplication([(r'/api/character/player/item/(.*)/(.*)', 
-                                       APIPlayerItem),
-                                      (r'/api/character/player/power/(.*)/(.*)', 
-                                       APIPlayerPower), 
-                                      (r'/api/character/player/action/(.*)', 
-                                       APIPlayerAction),                                       
-                                      (r'/api/character/player/templates', 
-                                       APIPlayerTemplate),
-                                      (r'/api/character/player/(.*)', 
-                                       APIPlayer),
-                                      (r'/api/character/nonplayer/(.*)', 
-                                       APINonPlayer),
-                                      (r'/api/party/(.*)', APIParty), 
-                                      (r'/api/(.*)', APIError)
+application = webapp.WSGIApplication([(r'/api/playercharacters', 
+                                       APICreatePlayerCharacters),
+                                      (r'/api/playercharacters/(.*)', 
+                                       APIPlayerCharacters),
+                                      (r'/api/nonplayercharacters/(.*)', 
+                                       APINonPlayerCharacters),
+                                      (r'/api/templates/(.*)', 
+                                       APITemplates),
+                                      (r'/api/parties', 
+                                       APICreateParties),
+                                      (r'/api/parties/(.*)', 
+                                       APIParties)                                   
                                      ],
-                                     debug=True)
-
-'''
-api methods:
-checkin - update location, check for monsters
-create player
-add item to player (include cost)
-get loot - monster killed
-transfer item to other player
-attack monster
-attack player
-
-
-
-
-
-'''
-
-
-
+                                     debug=DEBUG)
 
 def main():
     run_wsgi_app(application)

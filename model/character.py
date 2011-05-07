@@ -209,14 +209,14 @@ def createPlayer(self):
     db.put(player)
     return player
 
-def createPlayerFromTemplate(character_key, self, user):
+def createPlayerFromTemplate(key, name, user):
     '''Creates a new Player Character from a Player Character Template.
     ''' 
     _trace = TRACE + 'createPlayerFromTemplate():: '
     logging.info(_trace)
-    pc_template = db.get(character_key)
+    pc_template = db.get(key)
     if pc_template is None: return None
-    player = models.Player(name = self.request.get('name'),
+    player = models.Player(name = name,
                            level = pc_template.level,
                            race = pc_template.race,
                            alignment = pc_template.alignment,

@@ -334,8 +334,7 @@ class PlayerParty(Party):
     
 class NonPlayerParty(Party):        
     owner = db.UserProperty(required=False) # The id of a user or admin
-    monsters = db.ListProperty(db.Key, required=True, default=None) 
-  
+    monsters = db.ListProperty(db.Key, required=True, default=None)   
 
 ############### MAP ##########################################################  
 class Pin(polymodel.PolyModel): 
