@@ -209,12 +209,11 @@ def createPlayer(self):
     db.put(player)
     return player
 
-def createPlayerFromTemplate(key, name, user):
+def createPlayerFromTemplate(pc_template, name, user):
     '''Creates a new Player Character from a Player Character Template.
     ''' 
     _trace = TRACE + 'createPlayerFromTemplate():: '
     logging.info(_trace)
-    pc_template = db.get(key)
     if pc_template is None: return None
     player = models.Player(name = name,
                            level = pc_template.level,
@@ -236,8 +235,8 @@ def createPlayerFromTemplate(key, name, user):
                            powers = pc_template.powers,
                            equipped = pc_template.equipped,
                            purse = pc_template.purse,
-                           user = user )
-
+                           user = user)
+    db.put(player)                       
     return player
         
 def buildScores(self, cat_key, attr_keys):

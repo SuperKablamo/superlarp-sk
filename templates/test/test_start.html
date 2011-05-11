@@ -1,0 +1,27 @@
+{% extends "../admin.html" %}
+
+{% block content %}
+<div id="title">
+	<h1>Start</h1>
+</div>
+<div id="create-character">
+	<h2>Create A New Character</h2>
+	{% for t in pc_templates %}
+	<form method="post" action="/api/playercharacters">
+		<h3>{{t.name}}</h3>
+		<input type="hidden" name="key" value="{{t.key.name}}" />
+		<label>Character Name:</label><input type="text" name="name" value="" />
+    <input type="submit" value="Submit" />
+	</form>
+	{% endfor %}
+<div>
+<div id="adventure">
+	<h2>Adventure With:</h2>
+	<form method="get" action="/admin/test/quest">
+	{% for c in characters %}
+		<h3><input type="checkbox" name="key" value="{{c.key}}" />{{c.name}}</h3>
+	{% endfor %}	
+    <input type="submit" value="Begin Quest!" />	
+	</form>
+</div>		
+{% endblock %}

@@ -153,7 +153,7 @@ class Monster(NonPlayerCharacter):
     user = db.UserProperty(required=False)
     @property
     def party(self):
-        return NonPlayerParty.all().filter('monsters', self.key())     
+        return NonPlayerParty.all().filter('monsters', self.key())
 ##############################################################################
     
 class Skills(db.Model):
@@ -286,7 +286,7 @@ class Gear(Item):
 class Guild(db.Model):
     created = db.DateTimeProperty(auto_now_add=True)
     updated = db.DateTimeProperty(auto_now=True)   
-    owner = db.ReferenceProperty(PlayerCharacter, required=True, collection_name='players')
+    owner = db.ReferenceProperty(PlayerCharacter, required=True, collection_name='guild')
     leaders = db.ListProperty(db.Key, required=True, default=None) 
     name = db.StringProperty(required=True)
     motto = db.StringProperty(required=False)

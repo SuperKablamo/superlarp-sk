@@ -7,6 +7,7 @@
 # tasks.
 #
 # ============================================================================
+from settings import *
 
 import logging
 import random
@@ -30,6 +31,18 @@ def strToInt(s):
         i = 0       
     return i
 
+def parseLocation(location):
+    '''Returns a GeoPt from a lat/lon String
+    '''
+    _trace = TRACE+'parseLocation('+str(location)+') '
+    logging.info(_trace)
+    s = str.split(str(location), ',')
+    logging.info(_trace+'s = '+str(s))
+    logging.info(_trace+'s[0] = '+str(s[0]))
+    logging.info(_trace+'s[1] = '+str(s[1]))
+    geo_loc = db.GeoPt(s[0], s[1])
+    return geo_loc        
+        
 def prefetch_refprops(entities, *props):
     """Dereference Reference Properties to reduce Gets.  See:
     http://blog.notdot.net/2010/01/ReferenceProperty-prefetching-in-App-Engine

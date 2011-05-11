@@ -1,11 +1,14 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:og="http://ogp.me/ns#"
-      xmlns:fb="http://www.facebook.com/2008/fbml">
+<!DOCTYPE HTML>
+
+<html>
 
   <head>
-  	<title></title>
+  	<title>Admin</title>
   	<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+		<script src="https://www.google.com/jsapi?key=ABQIAAAApPeof0WyN6ORT7NeNop5OxQTfLwio8eQ7l5nn2epvDXvYfKfNxTgczQKHjATlT2Z11y3yDSfj-x87g" type="text/javascript"></script>
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.0/jquery.js"></script>
+		<meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+		<script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=false"></script>
 		<style type="text/css">
 			#header ul { padding: 0; }
 			#header li { padding-right: 18px; }
@@ -17,6 +20,8 @@
 			.items input { display: inline; margin-right: 8px; }
 			.items span { padding-right: 10px; }
 		</style>
+		{% block script %}
+		{% endblock %}
   </head> 
   <body>
   <div id="container">
@@ -28,6 +33,7 @@
 				<li><a href="/admin/weapon">Weapon</a></li>	
 				<li><a href="/admin/armor">Armor</a></li>	
 				<li><a href="/admin/power">Power</a></li>				
+				<li><a href="/admin/test/start">START</a></li>				
 			</ul>	
     </div><!-- /header -->
     <div id="content"> 

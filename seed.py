@@ -248,10 +248,21 @@ def seedNPCs():
         for a in x['languages']:
             languages.append(a)
         for a in x['keywords']:
-            keywords.append(a)    
-        for i in x['immunities']:
-            immunities.append(i)
-        
+            keywords.append(a)  
+        try:      
+            for i in x['immunities']:
+                immunities.append(i)
+        except KeyError:
+            pass
+        try:
+            resist = x['resist']
+        except KeyError:
+            resist = None    
+        try:
+            vulnerable = x['vulnerable']
+        except KeyError:
+            vulnerable = None    
+            
         npc = models.NonPlayerCharacter(name = x['name'],
                                         level = x['level'],
                                         race = x['race'],
@@ -271,8 +282,8 @@ def seedNPCs():
                                         artifacts = artifacts,
                                         role = x['role'],
                                         challenge = x['challenge'],
-                                        resist = x['resist'],
-                                        vulnerable = x['vulnerable'],
+                                        resist = resist,
+                                        vulnerable = vulnerable,
                                         immunities = immunities)
         
         npcs.append(npc)

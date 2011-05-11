@@ -29,7 +29,7 @@ from google.appengine.ext.webapp.util import run_wsgi_app
 ##############################################################################   
 class MainHandler(webapp.RequestHandler):
     def get(self):
-        self.response.out.write('Hello world!')
+        self.response.out.write('Hello Sam!')
 
 ######################## METHODS #############################################
 ##############################################################################

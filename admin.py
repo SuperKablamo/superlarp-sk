@@ -30,6 +30,7 @@ import logging
 import urllib2
 
 from django.utils import simplejson
+from google.appengine.api import oauth
 from google.appengine.api import users
 from google.appengine.ext import db
 from google.appengine.ext import webapp
@@ -132,7 +133,32 @@ class CharacterAdmin(webapp.RequestHandler):
             }        
             generate(self, 'admin_character.html', template_values)
 
-        
+class Test(webapp.RequestHandler):
+    def get(self, method):
+        _trace = TRACE+'Test:: get() '
+        logging.info(_trace)
+        if method == "start": 
+            pc_templates = models.PlayerCharacterTemplate.all().fetch(100) 
+            user = oauth.get_current_user()
+            characters = models.Character.all().filter('user =', user).fetch(100)
+            template_values = {
+                'pc_templates': pc_templates,
+                'characters': characters,
+                'user': user
+            }        
+            generate(self, 'test/test_start.html', template_values)
+        elif method == "quest":
+            user = oauth.get_current_user()
+            key = self.request.get('key')
+            character = db.get(key)
+            party = models.PlayerParty.all().filter('leader = ', character).get()
+            template_values = {
+                'party': party,
+                'character': character,
+                'user': user
+            }        
+            generate(self, 'test/test_quest.html', template_values) 
+            
 ######################## METHODS #############################################
 ##############################################################################
 def generate(self, template_name, template_values):
@@ -154,7 +180,8 @@ application = webapp.WSGIApplication([('/admin/', Admin),
                                       ('/admin/armor', ArmorAdmin),
                                       ('/admin/weapon', WeaponAdmin),
                                       ('/admin/power', PowerAdmin),
-                                      (r'/admin/character/(.*)', CharacterAdmin)],
+                                      (r'/admin/character/(.*)', CharacterAdmin),
+                                      (r'/admin/test/(.*)', Test)],
                                        debug=True)
 
 def main():
