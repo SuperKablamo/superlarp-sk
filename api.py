@@ -434,10 +434,12 @@ class APIParties(APIBase):
                     r[MSG] = 'Player not found for player_key '+player_key+' .'                            
                     return self.response.out.write(simplejson.dumps(r)) 
                     
-                quest = party.getJSONQuest(party, player, geo_loc)
+                monster_party = party.getJSONQuest(_party, player, geo_loc)
                 r = API200
                 r[MSG] = 'Seeking fortune.'
-                r['quest'] = quest
+                data = monster_party.json
+                data['key'] = str(monster_party.key())
+                r['NonPlayerParty'] = data
             
             #Character sends a message to character(s) in a Party.
             elif action == 'greet':

@@ -263,7 +263,8 @@ def seedNPCs():
         except KeyError:
             vulnerable = None    
             
-        npc = models.NonPlayerCharacter(name = x['name'],
+        npc = models.NonPlayerCharacterTemplate(name = x['name'],
+                                        template_id = x['template_id'],
                                         level = x['level'],
                                         race = x['race'],
                                         alignment = x['alignment'],

@@ -113,10 +113,11 @@ def rollEncounter(player_party, geo_pt):
     ''' 
     _trace = TRACE+'rollEncounter():: '
     logging.info(_trace)
+    logging.info(_trace+' player_party = '+str(player_party))    
 
     # Determine likelyhood of encounter ...
     '''
-    {'encounters': {'total': 23, 'uniques': 2, 'start_time': POSIX
+    {'encounter_log': {'total': 23, 'uniques': 2, 'start_time': POSIX
                    'last_encounter': {'time_since': POSIX, 'checks': 9}}}
     '''
     log = player_party.log
@@ -125,9 +126,14 @@ def rollEncounter(player_party, geo_pt):
     mod = checks*2
     r = utils.roll(100, 1)
     logging.info(_trace+'r = '+str(r))     
+    
     if r > 97: unique = True
     else: unique = False
     r = r + mod 
+    
+    ### TEST ROLL - uncomment to test a specific roll
+    r = 75
+    ###
     
     # There is an Encounter :)
     if r >= 75:
@@ -174,7 +180,7 @@ def rollEncounter(player_party, geo_pt):
         logging.info(_trace+'r = '+str(r))
         
         ### TEST ROLL - uncomment to test a specific roll
-        #r = 3
+        r = 1
         ###
         
         entities = []    
@@ -207,7 +213,7 @@ def rollEncounter(player_party, geo_pt):
             npc_party_size = party_xp/minion_xp
             logging.info(_trace+'npc_party_size = '+str(npc_party_size)) 
                         
-            q = db.Query(models.NonPlayerCharacter, keys_only=True)                    
+            q = db.Query(models.NonPlayerCharacterTemplate, keys_only=True)                    
             q.filter('role = ', models.MIN)
             q.filter('challenge =', models.STAN)
             q.filter('level =', avg_level)
@@ -216,15 +222,11 @@ def rollEncounter(player_party, geo_pt):
             logging.info(_trace+'# npc_keys = '+str(len(npc_keys)))              
             r = utils.roll(len(npc_keys), 1)
             logging.info(_trace+'r = '+str(r))  
-            npc_key = npc_keys[r]
+            npc_key = npc_keys[r-1] # indexes start at 0
             npc = db.get(npc_key)
-            for i in str(npc_party_size):
-                m = models.Monster(npc = npc_key,
-                                   json = character.getJSONNonPlayer(npc))
-                                    
+            for i in range(npc_party_size):
+                m = monster.createMonsterFromTemplate(npc)
                 entities.append(m)
-
-
                 
         ######################################################################
         # There's one for everyone.                
@@ -385,7 +387,7 @@ def rollEncounter(player_party, geo_pt):
 
     parties = [player_party, monster_party]        
     db.put(parties)
-    return monster_party     
+    return monster_party    
 
 def logBattle(location, loot, *characters):
     '''Stores a summary of a battle. 

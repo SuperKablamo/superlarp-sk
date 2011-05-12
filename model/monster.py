@@ -24,11 +24,74 @@ from google.appengine.ext import db
 ######################## METHODS #############################################
 ##############################################################################
 def getJSONMonster(monster):
-    logging.info(TRACE+'getMonsterJSON()')
-    json = monster.json
-    json['id'] = monster.key().id()
-    json['npc_id'] = monster.npc.key().id()
+    '''Returns a Monster as JSON.
+    '''
+    _trace = TRACE + 'getJSONMonster() '
+    logging.info(_trace)
+    logging.info(_trace + 'monster = ' + monster.name)
+    json = {'name': monster.name, 
+            'level': monster.level, 'race': monster.race,
+            'alignment': monster.alignment, 'size': monster.size, 
+            'experience': monster.experience, 'speed': monster.speed, 
+            'hit_points': monster.hit_points, 'actions': monster.actions, 
+            'scores': monster.scores, 'created': str(monster.created), 
+            'resist': monster.resist, 'vulnerable': monster.vulnerable, 
+            'key': str(monster.key()), 'description': monster.description,
+            'origin': monster.origin, 'category': monster.category,
+            'role': monster.role, 'challenge': monster.challenge,
+            'user': monster.user}
+
+    logging.info(_trace + 'json = ' + str(json))            
+     
+    artifacts = [] 
+    for a in monster.artifacts:
+        artifacts.append(a)
+    keywords = []
+    for k in monster.keywords:
+        keywords.append(k) 
+    immunities = []
+    for i in monster.immunities:
+        immunities.append(i)
+    languages = []
+    for l in monster.languages:
+        languages.append(l)
+    
+    json['artifacts'] = artifacts
+    json['keywords'] = keywords
+    json['languages'] = languages
+    json['immunities'] = immunities
     return json
+
+def createMonsterFromTemplate(npc_template):
+    '''Creates a new Monster from a NonPlayerCharacterTemplate.
+    ''' 
+    _trace = TRACE + 'createMonsterFromTemplate():: '
+    logging.info(_trace)
+    if npc_template is None: return None
+    monster = models.Monster(name = npc_template.name,
+                            level = npc_template.level,
+                            race = npc_template.race,
+                            alignment = npc_template.alignment,
+                            size = npc_template.size,
+                            experience = npc_template.experience,
+                            speed = npc_template.speed,
+                            items = npc_template.items,
+                            hit_points = npc_template.hit_points,
+                            scores = npc_template.scores,
+                            languages = npc_template.languages,
+                            immunities = npc_template.immunities,
+                            resist = npc_template.resist,
+                            vulnerable = npc_template.vulnerable,
+                            description = npc_template.description,
+                            origin = npc_template.origin,
+                            category = npc_template.category,
+                            keywords = npc_template.keywords, 
+                            actions = npc_template.actions,      
+                            artifacts = npc_template.artifacts, 
+                            role = npc_template.role,
+                            challenge = npc_template.challenge)
+    db.put(monster)                       
+    return monster
     
 ######################## DATA ################################################
 ##############################################################################   
@@ -36,7 +99,8 @@ MONSTER_DATA = [
 
   ################################# LEVEL 1 ##################################
 
-  {'name': 'Kobold Minion',
+  {'template_id': 1,
+  'name': 'Kobold Minion',
   'role': models.MIN, 
   'challenge': models.STAN,   
   'level': 1,
@@ -82,7 +146,8 @@ MONSTER_DATA = [
   'languages': ['Common', 'Draconic'],
   'keywords': []},
  
-  {'name': 'Kobold Warrior',
+  {'template_id': 2,
+  'name': 'Kobold Warrior',
   'role': models.SKI,
   'challenge': models.STAN,        
   'level': 1,
@@ -126,7 +191,8 @@ MONSTER_DATA = [
   'languages': ['Common', 'Draconic'],
   'keywords': []},
   
-  {'name': 'Kobold Wyrmpriest',
+  {'template_id': 3,
+  'name': 'Kobold Wyrmpriest',
   'role': models.ART, 
   'challenge': models.LEAD,   
   'level': 3,
@@ -199,7 +265,8 @@ MONSTER_DATA = [
   'languages': ['Common', 'Draconic'],
   'keywords': []},
 
-  {'name': 'Goblin Cutter',
+  {'template_id': 4,
+  'name': 'Goblin Cutter',
   'role': models.MIN,
   'challenge': models.STAN,        
   'level': 1,
@@ -243,7 +310,8 @@ MONSTER_DATA = [
   'languages': ['Common', 'Goblin'],
   'keywords': []},     
 
-  {'name': 'Goblin Hexer',
+  {'template_id': 5,
+  'name': 'Goblin Hexer',
   'role': models.CON,
   'challenge': models.LEAD,        
   'level': 3,
@@ -317,7 +385,8 @@ MONSTER_DATA = [
 
   ################################# LEVEL 2 ##################################
 
-  {'name': 'Decrepit Skeleton',
+  {'template_id': 6,
+  'name': 'Decrepit Skeleton',
   'role': models.MIN,
   'challenge': models.STAN,        
   'level': 2,
@@ -372,7 +441,8 @@ MONSTER_DATA = [
   'languages': [],     
   'keywords': ['Undead']},  
 
-  {'name': 'Blazing Skeleton',
+  {'template_id': 7,
+  'name': 'Blazing Skeleton',
   'role': models.ART,
   'challenge': models.LEAD,        
   'level': 4,
@@ -433,7 +503,8 @@ MONSTER_DATA = [
   'languages': [],     
   'keywords': ['Undead']},  
 
-  {'name': 'Goblin Sharpshooter',
+  {'template_id': 8,
+  'name': 'Goblin Sharpshooter',
   'role': models.ART,
   'challenge': models.STAN,        
   'level': 2,
@@ -488,7 +559,8 @@ MONSTER_DATA = [
   'languages': ['Common', 'Goblin'],
   'keywords': []},     
   
-  {'name': 'Wolf',
+  {'template_id': 9,
+  'name': 'Wolf',
   'role': models.SKI,
   'challenge': models.STAN,        
   'level': 2,
@@ -532,7 +604,8 @@ MONSTER_DATA = [
   'languages': [],
   'keywords': []},  
 
-  {'name': 'Kobold Dragonshield',
+  {'template_id': 10,
+  'name': 'Kobold Dragonshield',
   'role': models.SOL, 
   'challenge': models.STAN,   
   'level': 2,
@@ -581,7 +654,8 @@ MONSTER_DATA = [
 
   ################################# LEVEL 3 ##################################
 
-  {'name': 'Zombie',
+  {'template_id': 11,
+  'name': 'Zombie',
   'role': models.MIN, 
   'challenge': models.STAN,   
   'level': 3,
@@ -628,7 +702,8 @@ MONSTER_DATA = [
   'languages': [],
   'keywords': ['Undead']},
 
-  {'name': 'Zombie Rotking',
+  {'template_id': 12,
+  'name': 'Zombie Rotking',
   'role': models.SOL, 
   'challenge': models.LEAD,   
   'level': 5,
@@ -691,7 +766,8 @@ MONSTER_DATA = [
   'languages': [],
   'keywords': ['Undead']},
 
-  {'name': 'Young White Dragon',
+  {'template_id': 13,
+  'name': 'Young White Dragon',
   'role': models.BRU,
   'challenge': models.SOLO,        
   'level': 3,
@@ -761,7 +837,8 @@ MONSTER_DATA = [
   'languages': ['Draconic'],     
   'keywords': ['Dragon']},
 
-  {'name': 'Hobgoblin Archer',
+  {'template_id': 14,
+  'name': 'Hobgoblin Archer',
   'role': models.ART,
   'challenge': models.STAN,        
   'level': 3,
@@ -818,7 +895,8 @@ MONSTER_DATA = [
 
   ################################# LEVEL 4 ##################################
 
-  {'name': 'Orc',
+  {'template_id': 15,
+  'name': 'Orc',
   'role': models.MIN, 
   'challenge': models.STAN,   
   'level': 4,
@@ -864,7 +942,8 @@ MONSTER_DATA = [
   'languages': ['Common', 'Giant'],
   'keywords': []},
 
-  {'name': 'Orc Champion',
+  {'template_id': 16,
+  'name': 'Orc Champion',
   'role': models.BRU, 
   'challenge': models.LEAD,   
   'level': 6,
@@ -910,7 +989,8 @@ MONSTER_DATA = [
   'languages': ['Common', 'Giant'],
   'keywords': []},
   
-  {'name': 'Young Black Dragon',
+  {'template_id': 17,
+  'name': 'Young Black Dragon',
   'role': models.LUR,
   'challenge': models.SOLO,        
   'level': 4,
@@ -980,7 +1060,8 @@ MONSTER_DATA = [
   'languages': ['Common', 'Draconic'],     
   'keywords': ['Dragon', 'Aquatic']},
 
-  {'name': 'Monstrous Spider',
+  {'template_id': 18,
+  'name': 'Monstrous Spider',
   'role': models.SKI,
   'challenge': models.STAN,        
   'level': 4,
@@ -1026,7 +1107,8 @@ MONSTER_DATA = [
 
   ################################# LEVEL 5 ##################################
 
-  {'name': 'Vamnpire Spawn',
+  {'template_id': 19,
+  'name': 'Vamnpire Spawn',
   'role': models.MIN, 
   'challenge': models.STAN,   
   'level': 5,
@@ -1074,7 +1156,8 @@ MONSTER_DATA = [
   'languages': ['Common'],
   'keywords': []},
 
-  {'name': 'Vampire Knight',
+  {'template_id': 20,
+  'name': 'Vampire Knight',
   'role': models.LUR, 
   'challenge': models.LEAD,   
   'level': 7,
@@ -1154,7 +1237,8 @@ MONSTER_DATA = [
   'languages': ['Common', 'Elven'],
   'keywords': ['Undead']},
 
-  {'name': 'Young Green Dragon',
+  {'template_id': 21,
+  'name': 'Young Green Dragon',
   'role': models.SKI,
   'challenge': models.SOLO,        
   'level': 5,
@@ -1224,7 +1308,8 @@ MONSTER_DATA = [
   'languages': ['Common','Draconic'],     
   'keywords': ['Dragon']},
   
-  {'name': 'Bugbear Warrior',
+  {'template_id': 22,
+  'name': 'Bugbear Warrior',
   'role': models.BRU,
   'challenge': models.STAN,        
   'level': 5,
@@ -1284,7 +1369,8 @@ MONSTER_DATA = [
 
   ################################# LEVEL X ##################################
 
-  {'name': 'Hill Giant',
+  {'template_id': 23,
+  'name': 'Hill Giant',
   'role': models.BRU,
   'challenge': models.STAN,        
   'level': 13,
@@ -1353,7 +1439,8 @@ MONSTER_DATA = [
   'languages': ['Giant'],     
   'keywords': ['Giant']},
 
-  {'name': 'Adult Red Dragon',
+  {'template_id': 24,
+  'name': 'Adult Red Dragon',
   'role': models.SOL,
   'challenge': models.SOLO,        
   'level': 15,

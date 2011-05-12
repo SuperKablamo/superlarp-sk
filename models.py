@@ -114,8 +114,8 @@ class Character(polymodel.PolyModel):
     scores = JSONProperty(required=True)  #  {"abilities": {"STR": {"score": 10, "mod": 1, "mods": [{"origin": "Singing Sword", "mod": 1}, {"origin": "Dwarf", "mod": 1}]}}, "skills": {"Acrobatics": {"score": 10, "mod": 1, "mods": [{"origin": "trained", "mod": 5}, {"origin": "DEX", "mod": 1}]}}}
     languages = db.StringListProperty(required=True, default=None) 
     immunities = db.StringListProperty(required=True, default=None) 
-    resist = JSONProperty(required=False) # {'Fire': 10, 'Necrotic': 10}
-    vulnerable = JSONProperty(required=False) # {'Radiant': 5}
+    resist = JSONProperty(required=False, default=None) # {'Fire': 10, 'Necrotic': 10}
+    vulnerable = JSONProperty(required=False, default=None) # {'Radiant': 5}
         
 class PlayerCharacter(Character):
     cast = db.StringProperty(required=True)
@@ -141,13 +141,13 @@ class NonPlayerCharacter(Character):
     keywords = db.StringListProperty(required=True, default=None) 
     actions = JSONProperty(required=True, default=None)      
     artifacts = db.StringListProperty(required=True, default=None) 
-    unique = db.BooleanProperty(required=True, default=False) # Is there only 1
-    active = db.BooleanProperty(required=True, default=False) # Is one on the map?
     role = db.StringProperty(required=True)
     challenge = db.StringProperty(required=True, default=STAN)
 
 class NonPlayerCharacterTemplate(NonPlayerCharacter):
     template_id = db.IntegerProperty(required=True)   
+    unique = db.BooleanProperty(required=True, default=False) # Is there only 1
+    active = db.BooleanProperty(required=True, default=False) # Is one on the map?
     
 class Monster(NonPlayerCharacter): 
     user = db.UserProperty(required=False)

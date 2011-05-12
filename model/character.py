@@ -92,11 +92,14 @@ def getJSONPlayer(player):
                   'implements': implements, 'gear': gear, 'rings': rings,
                   'artifacts': artifacts}
      
-    # Construct JSON for Player immunities
     immunities = []
     for i in player.immunities:
-        immunities.appened(i)
+        immunities.append(i)
+    languages = []
+    for l in monster.languages:
+        languages.append(l)
     
+    json['languages'] = languages    
     json['immunities'] = immunities
     json['powers'] = powers_json 
     json['items'] = items_json
@@ -113,7 +116,7 @@ def getJSONNonPlayer(nonplayer):
             'role': nonplayer.role, 'challenge': nonplayer.challenge,
             'keywords': nonplayer.keywords, 'artifacts': nonplayer.artifacts,
             'languages': nonplayer.languages, 
-            'resistance': nonplayer.resistance,
+            'resist': nonplayer.resist,
             'vulnerable': nonplayer.vulnerable,
             'created': str(nonplayer.created),
             'id': str(nonplayer.key().id())}
@@ -210,7 +213,7 @@ def createPlayer(self):
     return player
 
 def createPlayerFromTemplate(pc_template, name, user):
-    '''Creates a new Player Character from a Player Character Template.
+    '''Creates a new PlayerCharacter from a PlayerCharacterTemplate.
     ''' 
     _trace = TRACE + 'createPlayerFromTemplate():: '
     logging.info(_trace)

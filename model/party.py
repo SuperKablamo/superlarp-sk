@@ -20,6 +20,7 @@ from utils import roll
 ############################# GAE IMPORTS ####################################
 ##############################################################################
 import logging
+import time
 
 from google.appengine.ext import db
 
@@ -48,9 +49,9 @@ def createJSONParty(character, location):
     '''
     _trace = TRACE+'createJSONParty() '
     logging.info(_trace)
-    log = {'encounters': 
-           {'total': 0, 'uniques': 0, 'start_time': POSIX
-            'last_encounter': {'time_since': POSIX, 'checks': 0}}}
+    log = {'encounter_log': 
+           {'total': 0, 'uniques': 0, 'start_time': time.time(),
+            'last_encounter': {'time_since': 0, 'checks': 0}}}
             
     party = models.PlayerParty(location = location,
                                leader = character,
@@ -60,7 +61,8 @@ def createJSONParty(character, location):
     updates = [party,character]
     db.put(updates)
     json = {'key': str(party.key()), 'leader_key': str(party.leader.key()), 
-            'location': str(location), 'members': [str(party.leader.key())]}
+            'location': str(location), 'members': [str(party.leader.key())],
+            'log': str(log)}
                          
     return json
 
