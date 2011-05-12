@@ -128,7 +128,7 @@ class PlayerCharacter(Character):
 class Player(PlayerCharacter):
     user = db.UserProperty(required=False)
     @property
-    def party(self):
+    def parties(self):
         return PlayerParty.all().filter('members', self.key())
         
 class PlayerCharacterTemplate(PlayerCharacter):
@@ -152,7 +152,7 @@ class NonPlayerCharacterTemplate(NonPlayerCharacter):
 class Monster(NonPlayerCharacter): 
     user = db.UserProperty(required=False)
     @property
-    def party(self):
+    def parties(self):
         return NonPlayerParty.all().filter('monsters', self.key())
 ##############################################################################
     

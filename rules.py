@@ -226,6 +226,7 @@ def rollEncounter(player_party, geo_pt):
             npc = db.get(npc_key)
             for i in range(npc_party_size):
                 m = monster.createMonsterFromTemplate(npc)
+                monster_party.monsters.append(m.key())
                 entities.append(m)
                 
         ######################################################################

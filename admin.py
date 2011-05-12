@@ -159,6 +159,22 @@ class Test(webapp.RequestHandler):
             }        
             generate(self, 'test/test_quest.html', template_values) 
             
+        elif method == "attack":
+            user = oauth.get_current_user()
+            key = self.request.get('key')
+            character = db.get(key)
+            party = models.PlayerParty.all().filter('leader = ', character).get()
+            monster_party = models.NonPlayerParty.get_by_id(146)
+            monsters = db.get(monster_party.monsters)
+            template_values = {
+                'party': party,
+                'monster_party': monster_party,
+                'monsters': monsters,
+                'character': character,
+                'user': user
+            }        
+            generate(self, 'test/test_attack.html', template_values)   
+                     
 ######################## METHODS #############################################
 ##############################################################################
 def generate(self, template_name, template_values):

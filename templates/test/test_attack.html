@@ -4,8 +4,6 @@
 
 <script>
 $(document).ready(function() {
-
-
   // attach a submit handler to the form
   $("#checkin-form").submit(function(event) {
     // stop form from submitting normally
@@ -23,13 +21,12 @@ $(document).ready(function() {
     );
   });
 });
-
 </script>
 {% endblock %}
 
 {% block content %}
 <div id="title">
-	<h1>Quest</h1>
+	<h1>Attack</h1>
 </div>
 {% if not party %}
 <div id="create-party">
@@ -99,11 +96,16 @@ $(document).ready(function() {
 			{% endfor %}
 		</tr>
   </table>
-	<div id="checkin">
-		<form id="checkin-form" method="" action="/api/parties/{{party.key}}/quest">
+	<div id="attack">
+		<form id="attack-form" method="" action="/api/parties/{{party.key}}/attack">
 			<input type="hidden" name="player_key" value="{{character.key}}" />
 			<input type="hidden" name="location" value="{{party.location}}" />
-		  <input type="submit" value="Quest!" />	
+			<select>
+				{% for m in monsters %}
+				  <option value="{{m.key}}">{{m.name}}</option>
+				{% endfor %}
+			</select>	
+		  <input type="submit" value="Attack!" />	
 		</form>
 	</div>
 	<div id="result">
