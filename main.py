@@ -29,11 +29,22 @@ from google.appengine.ext.webapp.util import run_wsgi_app
 ##############################################################################   
 class MainHandler(webapp.RequestHandler):
     def get(self):
-        self.response.out.write('Hello Sam!')
+        template_values = {
+            'text': 'Hello World'
+        }
+        generate(self, 'main.html', template_values)        
 
 ######################## METHODS #############################################
 ##############################################################################
+def generate(self, template_name, template_values):
+    directory = os.path.dirname(__file__)
+    path = os.path.join(directory, 
+                        os.path.join('templates', template_name))
 
+    self.response.out.write(template.render(path, 
+                                            template_values, 
+                                            debug=DEBUG))
+                                            
 ##############################################################################
 ##############################################################################
 application = webapp.WSGIApplication([(r'/.*', MainHandler)],

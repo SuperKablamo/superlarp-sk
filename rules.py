@@ -34,76 +34,141 @@ def rollLoot(level=1):
     '''   
     return loot.loot(level)    
     
-def rollAttack(attacker, defenders, attack):
-    '''Resolves an attack and returns the damage result as a dictionary:
-    {'damage': 10, 'keywords': ['Fire'], 'status': 'Hit'}
+def attackMonster(attacker, attack, monster):
+    '''Resolves an attack against a Monster and returns the damage result as 
+    a dictionary: {'damage': 10, 'keywords': ['Fire'], 'status': 'Hit'}
     '''
-    
-    # THIS IS TEST CODE, take the first defender since logic is not yet built 
-    # to account for multiple defenders
-    defender = defenders[0]
-    # 
-            
     _trace = TRACE+'rollAttack():: '
     logging.info(_trace)
-    damage_keywords = attack['damage_keywords']
-    json = {'damage': 0, 'keywords': damage_keywords, 'status': 'Hit'}
+    damage_keywords = attack.damage_keywords
+    json = {'monster': str(monster.key()),'damage': 0, 'keywords': damage_keywords, 'status': 'Hit'}
     
     # Roll Attack, natural 20 is a Hit
-    attack_roll = utils.roll(20, 1)
-    if attack_roll != 20:
-        mod_attack_roll = attack_roll + attack['attack_mod']
-        logging.info(_trace+'attack_roll = '+attack_roll)
-        logging.info(_trace+'mod_attack_roll = '+mod_attack_roll)
+    attack_roll = utils.roll(20, 1)    
+    
+    if attack.class_name() == 'Weapon':
+        logging.info(_trace+'Attack = Item.Weapon')
+        mod_attack_roll = attack_roll + attack.attack_mod
+        logging.info(_trace+'attack_roll = '+str(attack_roll))
+        logging.info(_trace+'mod_attack_roll = '+str(mod_attack_roll))
     
         # Get Defense Score
-        defense = attack['defense_ability']
-        defense_score = defender['scores']['defenses'][defense]['score']
-        logging.info(_trace+'defense_score = '+defense_score)     
+        defense = attack.defense_ability
+        defense_score = monster.scores['defenses'][defense]['score']
+        logging.info(_trace+'defense_score = '+str(defense_score))     
     
         # Evaluate Hit
         if mod_attack_roll < defense_score:
+            logging.info(_trace+'Attack is a Miss!')
             json['status'] = 'Miss'
+
+        # Roll Damage
+        else:    
+            logging.info(_trace+'Attack is a Hit!')
+            damage_dice = attack.damage_dice 
+            damage_die = attack.damage_die
+            ability = attack.damage_ability_mod
+            damage = 0
+            if damage_die != 0:
+                damage = utils.roll(damage_die, damage_dice)
+            ability_mod = attacker.scores['abilities'][ability]['mod']
+            damage += ability_mod
+            logging.info(_trace+'unmodified damage = '+str(damage))
     
-    # Roll Damage
-    damage_dice = attack['damage_dice'] 
-    damage_die = attack['damage_die']
-    damage_mod = attack['damage_mod']
-    damage = 0
-    if damage_die != 0:
-        damage = utils.roll(damage_die, damage_dice)
-    damage += damage_mod
-    
-    # Calculate Defenses
-    immune_to = defender['immune']
-    resists =  defender['resist']
-    vulnerable_to = defender['vulnerable']
-    damage_keyword = None
-    for d in damage_keywords:
+            # Calculate Defenses
+            immunities = monster.immunities
+            resist =  monster.resist
+            vulnerable = monster.vulnerable
+            for d in damage_keywords:
+                # No Damage if Monster has immunity
+                if d in immunities:
+                    json['status'] = 'Immune to '+d
+                    return json        
         
-        # No Damage if Defender has immunity
-        if d in immune_to:
-            status = 'Immune to '+d
-            json['status'] = status
-            return json        
+                # Reduced Damage for resistence
+                if resist is not None:
+                    resist_keys = resist.keys()
+                    if d in resist_keys:
+                        mod = resist[d]
+                        damage -= mod
+                        json['status'] = 'Resists '+d
         
-        # Reduced Damage for resistence
-        resist_keys = resists.keys()
-        if d in resist_keys:
-            mod = resists[d]
-            damage -= mod
+                # Increased Damage for vulnerability
+                if vulnerable is not None:
+                    vulnerable_keys = vulnerable.keys()
+                    if d in vulnerable_keys:
+                        mod = vulnerable[d]
+                        damage += mod
+                        json['status'] = 'Vulnerable to '+d                    
+    
+                # Damage cannot be less than 0
+                if damage < 0:
+                    damage = 0    
+    
+                json['damage'] = damage        
+                
+    elif attack.class_name() == 'Attack':    
+        logging.info(_trace+'Attack = Power.Attack')
+
+        mod_attack_roll = attack_roll + attack.attack_mod
+        logging.info(_trace+'attack_roll = '+str(attack_roll))
+        logging.info(_trace+'mod_attack_roll = '+str(mod_attack_roll))
+    
+        # Get Defense Score
+        defense = attack.defense_ability
+        defense_score = monster.scores['defenses'][defense]['score']
+        logging.info(_trace+'defense_score = '+str(defense_score))     
+    
+        # Evaluate Hit
+        if mod_attack_roll < defense_score:
+            logging.info(_trace+'Attack is a Miss!')
+            json['status'] = 'Miss'
+
+        # Roll Damage
+        else:    
+            logging.info(_trace+'Attack is a Hit!')
+            damage_dice = attack.damage_dice 
+            damage_die = attack.damage_die
+            ability = attack.damage_ability_mod
+            damage = 0
+            if damage_die != 0:
+                damage = utils.roll(damage_die, damage_dice)
+            ability_mod = attacker.scores['abilities'][ability]['mod']
+            damage += ability_mod
+            logging.info(_trace+'unmodified damage = '+str(damage))
+    
+            # Calculate Defenses
+            immunities = monster.immunities
+            resist =  monster.resist
+            vulnerable = monster.vulnerable
+            for d in damage_keywords:
+                # No Damage if Monster has immunity
+                if d in immunities:
+                    json['status'] = 'Immune to '+d
+                    return json        
         
-        # Increased Damage for vulnerability
-        vulnerable_keys = vulnerable_to.keys()
-        if d in vulnerable_keys:
-            mod = vulnerable_to[d]
-            damage += mod
+                # Reduced Damage for resistence
+                if resist is not None:
+                    resist_keys = resist.keys()
+                    if d in resist_keys:
+                        mod = resist[d]
+                        damage -= mod
+                        json['status'] = 'Resists '+d
+        
+                # Increased Damage for vulnerability
+                if vulnerable is not None:
+                    vulnerable_keys = vulnerable.keys()
+                    if d in vulnerable_keys:
+                        mod = vulnerable[d]
+                        damage += mod
+                        json['status'] = 'Vulnerable to '+d                    
     
-    # Damage cannot be less than 0
-    if damage < 0:
-        damage = 0    
+                # Damage cannot be less than 0
+                if damage < 0:
+                    damage = 0    
     
-    json['damage'] = damage
+                json['damage'] = damage
+    
     return json
     
 def rollEncounter(player_party, geo_pt):
@@ -121,8 +186,8 @@ def rollEncounter(player_party, geo_pt):
                    'last_encounter': {'time_since': POSIX, 'checks': 9}}}
     '''
     log = player_party.log
-    checks = log['encounters']['last_encounter']['checks']
-    player_party.log['encounters']['last_encounter']['checks'] = checks + 1
+    checks = log['encounter_log']['last_encounter']['checks']
+    player_party.log['encounter_log']['last_encounter']['checks'] = checks + 1
     mod = checks*2
     r = utils.roll(100, 1)
     logging.info(_trace+'r = '+str(r))     
@@ -138,9 +203,9 @@ def rollEncounter(player_party, geo_pt):
     # There is an Encounter :)
     if r >= 75:
         # Update the Encounter Log ...
-        player_party.log['encounters']['total'] += 1
+        player_party.log['encounter_log']['total'] += 1
         last_encounter = {'time_since': time.time(), 'checks': 0}
-        player_party.log['encounters']['last_encounter'] = last_encounter
+        player_party.log['encounter_log']['last_encounter'] = last_encounter
         
         monster_party = models.NonPlayerParty(location = geo_pt, 
                                               monsters = [],

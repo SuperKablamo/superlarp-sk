@@ -139,7 +139,7 @@ class Test(webapp.RequestHandler):
         logging.info(_trace)
         if method == "start": 
             pc_templates = models.PlayerCharacterTemplate.all().fetch(100) 
-            user = oauth.get_current_user()
+            user = users.get_current_user()
             characters = models.Character.all().filter('user =', user).fetch(100)
             template_values = {
                 'pc_templates': pc_templates,
@@ -148,7 +148,7 @@ class Test(webapp.RequestHandler):
             }        
             generate(self, 'test/test_start.html', template_values)
         elif method == "quest":
-            user = oauth.get_current_user()
+            user = users.get_current_user()
             key = self.request.get('key')
             character = db.get(key)
             party = models.PlayerParty.all().filter('leader = ', character).get()
@@ -160,17 +160,21 @@ class Test(webapp.RequestHandler):
             generate(self, 'test/test_quest.html', template_values) 
             
         elif method == "attack":
-            user = oauth.get_current_user()
+            user = users.get_current_user()
             key = self.request.get('key')
             character = db.get(key)
+            items = db.get(character.items)
+            powers = db.get(character.powers)
             party = models.PlayerParty.all().filter('leader = ', character).get()
-            monster_party = models.NonPlayerParty.get_by_id(146)
+            monster_party = models.NonPlayerParty.get_by_id(65)
             monsters = db.get(monster_party.monsters)
             template_values = {
                 'party': party,
                 'monster_party': monster_party,
                 'monsters': monsters,
                 'character': character,
+                'items': items,
+                'powers': powers,
                 'user': user
             }        
             generate(self, 'test/test_attack.html', template_values)   

@@ -96,7 +96,7 @@ def getJSONPlayer(player):
     for i in player.immunities:
         immunities.append(i)
     languages = []
-    for l in monster.languages:
+    for l in player.languages:
         languages.append(l)
     
     json['languages'] = languages    

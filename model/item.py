@@ -47,24 +47,24 @@ def seedWeapons():
         if 'implement' in keys: 
             implement = x['implement']
         else: implement = None
-        if 'attack_bonus' in keys: 
-            attack_bonus = x['attack_bonus']
-        else: attack_bonus = None
-        if 'damage_bonus' in keys: 
-            damage_bonus = x['damage_bonus']
-        else: damage_bonus = None
+        if 'attack_mod' in keys: 
+            attack_mod = x['attack_mod']
+        else: attack_mod = None
+        if 'damage_mod' in keys: 
+            damage_mod = x['damage_mod']
+        else: damage_mod = None
         if 'critical_damage_die' in keys: 
             critical_damage_die = x['critical_damage_die']
         else: critical_damage_die = None
         if 'critical_damage_dice' in keys: 
             critical_damage_dice = x['critical_damage_dice']
         else: critical_damage_dice = None
-        if 'defense_type_bonus' in keys: 
-            defense_type_bonus = x['defense_type_bonus']
-        else: defense_type_bonus = None
-        if 'defense_bonus' in keys: 
-            defense_bonus = x['defense_bonus']
-        else: defense_bonus = None
+        if 'defense_mod_type' in keys: 
+            defense_mod_type = x['defense_mod_type']
+        else: defense_mod_type = None
+        if 'defense_mod' in keys: 
+            defense_mod = x['defense_mod']
+        else: defense_mod = None
                                              
         weapon = models.Weapon(key_name = x['name'],
                                proficiency = x['proficiency'],        
@@ -81,12 +81,12 @@ def seedWeapons():
                                casts = casts,
                                magic = x['magic'],
                                implmement = implement,
-                               attack_bonus = attack_bonus,
-                               damage_bonus = damage_bonus,
+                               attack_mod = attack_mod,
+                               damage_mod = damage_mod,
                                critical_damage_die = critical_damage_die,
                                critical_damage_dice = critical_damage_dice,
-                               defense_type_bonus = defense_type_bonus,
-                               defense_bonus = defense_bonus)          
+                               defense_mod_type = defense_mod_type,
+                               defense_mod = defense_mod)          
         
         weapon.json = getJSONItem(models.WPN, weapon)
         weapons.append(weapon)
@@ -108,12 +108,12 @@ def seedArmor():
 
         # These are optional properties and may not be in the seed data.    
         keys = x.keys()        
-        if 'defense_type_bonus' in keys: 
-            defense_type_bonus = x['defense_type_bonus']
-        else: defense_type_bonus = None
-        if 'defense_bonus' in keys: 
-            defense_bonus = x['defense_bonus']
-        else: defense_bonus = None
+        if 'defense_mod_type' in keys: 
+            defense_mod_type = x['defense_mod_type']
+        else: defense_mod_type = None
+        if 'defense_mod' in keys: 
+            defense_mod = x['defense_mod']
+        else: defense_mod = None
         
         armor = models.Armor(key_name = x['name'],        
                              name = x['name'],
@@ -126,8 +126,8 @@ def seedArmor():
                              category = x['category'],
                              casts = casts,
                              magic = x['magic'],
-                             defense_type_bonus = defense_type_bonus,
-                             defense_bonus = defense_bonus)          
+                             defense_mod_type = defense_mod_type,
+                             defense_mod = defense_mod)          
         
         armor.json = getJSONItem(models.ARM, armor)
         armors.append(armor)
@@ -140,8 +140,8 @@ def getJSONItem(model_name, model):
             'level': model.level, 'slot': model.slot, 'price': model.price,
             'casts': model.casts, 'weight': model.weight, 
             'magic': model.magic, 
-            'ability_type_bonus': model.ability_type_bonus,
-            'ability_bonus': model.ability_bonus}
+            'ability_mod_type': model.ability_mod_type,
+            'ability_mod': model.ability_mod}
             
     if model.power is not None:
         json['power'] = model.power.name        
@@ -154,12 +154,12 @@ def getJSONItem(model_name, model):
         json['attributes'] = model.attributes
         json['ranges'] = model.ranges
         json['proficiency'] = model.proficiency
-        json['attack_bonus'] = model.attack_bonus
-        json['damage_bonus'] = model.damage_bonus
+        json['attack_mod'] = model.attack_mod
+        json['damage_mod'] = model.damage_mod
         json['critical_damage_die'] = model.critical_damage_die
         json['critical_damage_dice'] = model.critical_damage_dice
-        json['defense_type_bonus'] = model.defense_type_bonus
-        json['defense_bonus'] = model.defense_bonus
+        json['defense_mod_type'] = model.defense_mod_type
+        json['defense_mod'] = model.defense_mod
         json['implement'] = model.implement                              
         
     elif model_name == models.ARM:
@@ -259,8 +259,8 @@ WEAPON_DATA = [
   'casts': ['Wizard'],
   'magic': True,
   'implement': True,
-  'defense_type_bonus': 'AC',
-  'defense_bonus': 1},
+  'defense_mod_type': 'AC',
+  'defense_mod': 1},
 
   ############################## MARTIAL MELEE  ##############################
   {'name': 'Battleaxe',

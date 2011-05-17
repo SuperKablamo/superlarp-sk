@@ -1,120 +1,127 @@
 {% extends "../admin.html" %}
 
 {% block script %}
-
-<script>
-$(document).ready(function() {
-  // attach a submit handler to the form
-  $("#checkin-form").submit(function(event) {
-    // stop form from submitting normally
-    event.preventDefault();         
-    // get some values from elements on the page:
-    var $form = $(this),
-        p_key = $form.find('input[name="player_key"]').val(),
-        loc = $form.find('input[name="location"]').val(),
-        url = $form.attr('action');
-    // Send the data using post and put the results in a div
-    $.post(url, {player_key:p_key, location:loc},
-      function(data) {
-          $("#result").html(data);
-      }
-    );
-  });
-});
-</script>
+	<script>
+	$(document).ready(function() {
+  	// attach a submit handler to the form
+  	$("#attack-form").submit(function(event) {
+    	// stop form from submitting normally
+    	event.preventDefault();         
+    	// get some values from elements on the page:
+			var dataToBeSent = $("#attack-form").serialize();
+			var url = $("#attack-form").attr('action');
+			/*
+    	var $form = $(this),
+				w_key = $form.find('input[name="weapon_key"]').val(),
+				a_key = $form.find('input[name="attack_key"]').val(),
+				p_key = $form.find('input[name="player_key"]').val(),
+      	loc = $form.find('input[name="location"]').val(),
+      	url = $form.attr('action'),
+      	m_keys = $('#monsters :selected').map(function(){return $(this).val();}).get();
+    	*/
+			// Send the data using post and put the results in a div
+    	//$.post(url, {player_key:p_key, location:loc, weapon_key:w_key, attack_key:a_key, monster_keys:m_keys},
+	    $.post(url, dataToBeSent,
+				function(data) {
+          $("#result").html(data.damage);
+        }
+      );
+  	});
+	});
+	</script>
 {% endblock %}
 
 {% block content %}
-<div id="title">
-	<h1>Attack</h1>
-</div>
-{% if not party %}
-<div id="create-party">
-	<h2>Create Party:</h2>
-	<form method="post" action="/api/parties">
-		<input type="hidden" name="key" value="{{character.key}}" />
-		<input type="textbox" name="lat" value="41.003758" />
-		<input type="textbox" name="lon" value="-91.949948" />			
-	  <input type="submit" value="Create Party" />	
-	</form>
-</div>
-{% else %}
-<div id="quest">
-	<h2>{{character.name}}</h2>
-	<p>Level: {{character.level}} | Experience: {{character.experience}} | Hit Points: {{character.hit_points.hp}}</p>
-	<p>Race: {{character.race}} | Class: {{character.cast}} | Height: {{character.height}} | Weight: {{character.weight}}</p>
-	
-	<div id="location">
-    <img border="0" alt="Berkeley, CA" src="http://maps.google.com/maps/api/staticmap?center={{party.location}}&amp;zoom=15&amp;size=200x200&amp;sensor=false&amp;markers=size:tinycolor:blue%7C{{party.location}}">	
-	</div>		
-	<table id="ability-scores">
-		<tr>
-			<th>STR</th>
-			<th>CON</th>
-			<th>DEX</th>
-			<th>INT</th>
-			<th>WIS</th>
-			<th>CHA</th>												
-		</tr>	
-		<tr>
-			<td>{{character.scores.abilities.STR.score}}</td>
-			<td>{{character.scores.abilities.CON.score}}</td>
-			<td>{{character.scores.abilities.DEX.score}}</td>
-			<td>{{character.scores.abilities.INT.score}}</td>
-			<td>{{character.scores.abilities.WIS.score}}</td>
-			<td>{{character.scores.abilities.CHA.score}}</td>
-		</tr>	
-	</table>	
-	<table id="defense-scores">
-		<tr>
-			<th>AC</th>
-			<th>FORT</th>
-			<th>REF</th>
-			<th>WILL</th>												
-		</tr>	
-		<tr>
-			<td>{{character.scores.defenses.AC.score}}</td>
-			<td>{{character.scores.defenses.FORT.score}}</td>
-			<td>{{character.scores.defenses.REF.score}}</td>
-			<td>{{character.scores.defenses.WILL.score}}</td>
-		</tr>	
-	</table>
-	<table id="items">
-		<tr>
-			<th>ITEMS</th>
-			{% for x in character.items %}
-				<td>{{x.name}}</td>
-			{% endfor %}
-		</tr>
-  </table>
 
-	<table id="powers">
-		<tr>
-			<th>POWERS</th>
-			{% for x in character.powers %}
-				<td>{{x.name}}</td>				
-			{% endfor %}
-		</tr>
-  </table>
-	<div id="attack">
-		<form id="attack-form" method="" action="/api/parties/{{party.key}}/attack">
-			<input type="hidden" name="player_key" value="{{character.key}}" />
-			<input type="hidden" name="location" value="{{party.location}}" />
-			<select>
-				{% for m in monsters %}
-				  <option value="{{m.key}}">{{m.name}}</option>
-				{% endfor %}
-			</select>	
-		  <input type="submit" value="Attack!" />	
+	<div id="title">
+		<h1>Attack</h1>
+	</div>
+
+	{% if not party %}
+	<div id="create-party">
+		<h2>Create Party:</h2>
+		<form method="post" action="/api/parties">
+			<input type="hidden" name="key" value="{{character.key}}" />
+			<input type="textbox" name="lat" value="41.003758" />
+			<input type="textbox" name="lon" value="-91.949948" />			
+	  	<input type="submit" value="Create Party" />	
 		</form>
 	</div>
-	<div id="result">
-	</div>		
-</div>
-{% endif %}
-<div id="parties">
-{% for p in character.parties %}
-	<h4>Party Location: {{p.location}}</h4>
-{% endfor %}
-</div>
+	{% else %}
+	<div id="character">
+		<h2>{{character.name}}</h2>
+		<p>Level: {{character.level}} | Experience: {{character.experience}} | Hit Points: {{character.hit_points.hp}}</p>
+		<p>Race: {{character.race}} | Class: {{character.cast}} | Height: {{character.height}} | Weight: {{character.weight}}</p>
+	
+		<div id="location">
+    	<img border="0" alt="Berkeley, CA" src="http://maps.google.com/maps/api/staticmap?center={{party.location}}&amp;zoom=15&amp;size=200x200&amp;sensor=false&amp;markers=size:tinycolor:blue%7C{{party.location}}">	
+		</div>	
+			
+		<table id="ability-scores">
+			<tr>
+				<th>STR</th>
+				<th>CON</th>
+				<th>DEX</th>
+				<th>INT</th>
+				<th>WIS</th>
+				<th>CHA</th>												
+			</tr>	
+			<tr>
+				<td>{{character.scores.abilities.STR.score}}</td>
+				<td>{{character.scores.abilities.CON.score}}</td>
+				<td>{{character.scores.abilities.DEX.score}}</td>
+				<td>{{character.scores.abilities.INT.score}}</td>
+				<td>{{character.scores.abilities.WIS.score}}</td>
+				<td>{{character.scores.abilities.CHA.score}}</td>
+			</tr>	
+		</table>	
+		
+		<table id="defense-scores">
+			<tr>
+				<th>AC</th>
+				<th>FORT</th>
+				<th>REF</th>
+				<th>WILL</th>												
+			</tr>	
+			<tr>
+				<td>{{character.scores.defenses.AC.score}}</td>
+				<td>{{character.scores.defenses.FORT.score}}</td>
+				<td>{{character.scores.defenses.REF.score}}</td>
+				<td>{{character.scores.defenses.WILL.score}}</td>
+			</tr>	
+		</table>
+		
+		<div id="attack">
+			<form id="attack-form" method="" action="/api/parties/{{party.key}}/attack">
+			<h3>Attack</h3>
+				<label>ITEMS</label><br/>
+				{% for x in items %}
+				<input type="radio" name="weapon_key" value="{{x.key}}"/>{{x.name}}<br/>
+				{% endfor %}
+				<label>POWERS</label><br/>
+				{% for x in powers %}
+				<input type="radio" name="attack_key" value="{{x.key}}"/>{{x.name}}<br/>
+				{% endfor %}
+				<input type="hidden" name="player_key" value="{{character.key}}" />
+				<input type="hidden" name="location" value="{{party.location}}" />
+				<select name="monsters" multiple size={{monsters|length}}>
+					{% for m in monsters %}
+				  <option value="{{m.key}}">{{m.name}}</option>
+					{% endfor %}
+				</select>	
+		  	<input type="submit" value="Attack!" />	
+			</form>
+		</div>
+		<div id="result">
+		</div>		
+	
+	</div><!-- /character -->
+	
+	<div id="parties">
+		{% for p in character.parties %}
+		<h4>Party Location: {{p.location}}</h4>
+		{% endfor %}
+	</div>	
+	{% endif %}
+
 {% endblock %}

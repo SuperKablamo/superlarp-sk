@@ -72,6 +72,16 @@ def getJSONQuest(party, player, geo_loc):
     '''
     quest = rules.rollEncounter(party, geo_loc)
     return quest 
+
+def getJSONAttack(party, monsters, attacker, attack):
+    '''Returns the damage inflicted on any monsters.
+    '''
+    damage = []
+    for m in monsters:
+        result = rules.attackMonster(attacker, attack, m)
+        damage.append(result)
+            
+    return damage    
     
 ######################## DATA ################################################
 ##############################################################################

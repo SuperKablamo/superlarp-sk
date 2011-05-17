@@ -9,7 +9,7 @@
 	{% for t in pc_templates %}
 	<form method="post" action="/api/playercharacters">
 		<h3>{{t.name}}</h3>
-		<input type="hidden" name="key" value="{{t.key.name}}" />
+		<input type="hidden" name="key" value="{{t.key}}" />
 		<label>Character Name:</label><input type="text" name="name" value="" />
     <input type="submit" value="Submit" />
 	</form>

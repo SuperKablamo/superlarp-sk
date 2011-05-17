@@ -41,8 +41,25 @@ def parseLocation(location):
     logging.info(_trace+'s[0] = '+str(s[0]))
     logging.info(_trace+'s[1] = '+str(s[1]))
     geo_loc = db.GeoPt(s[0], s[1])
-    return geo_loc        
-        
+    return geo_loc  
+    
+def findMissingParams(self, *params):
+    '''Returns a List of missing parameters.
+    '''
+    _trace = TRACE+'findMissingParams() '
+    logging.info(_trace)
+    missing = []
+    for p in params:
+        val = self.request.get(p)
+        logging.info(_trace+p+' = '+str(val))
+        if val is None:
+            missing.append(p)
+    
+    if len(missing) > 0:
+        return missing          
+    else:
+        return None
+            
 def prefetch_refprops(entities, *props):
     """Dereference Reference Properties to reduce Gets.  See:
     http://blog.notdot.net/2010/01/ReferenceProperty-prefetching-in-App-Engine

@@ -126,7 +126,7 @@ class PlayerCharacter(Character):
     purse = JSONProperty(required=True) # {"copper": 800, "silver": 500, "gold": 90, "platinum": 4, "gems": 86}
 
 class Player(PlayerCharacter):
-    user = db.UserProperty(required=False)
+    user = db.UserProperty(required=True)
     @property
     def parties(self):
         return PlayerParty.all().filter('members', self.key())
@@ -244,8 +244,8 @@ class Item(polymodel.PolyModel):
     casts = db.StringListProperty(required=True, default=None) # Allowed Casts  
     power = db.ReferenceProperty(required=False) # Inherent Power
     category = db.StringProperty(required=False)
-    ability_type_bonus = db.StringProperty(required=False)
-    ability_bonus = db.IntegerProperty(required=False)    
+    ability_mod_type = db.StringProperty(required=False)
+    ability_mod = db.IntegerProperty(required=False)    
     json = JSONProperty(required=True)
     
 class Weapon(Item):
@@ -253,22 +253,23 @@ class Weapon(Item):
     damage_dice = db.IntegerProperty(required=True) # Number of dice to roll
     group = db.StringProperty(required=True)
     attributes = db.StringListProperty(required=True)
+    damage_keywords = db.StringListProperty(required=True, default=None)    
     ranges = db.IntegerProperty(required=True, default=0)
     proficiency = db.IntegerProperty(required=True, default=0)
-    attack_bonus = db.IntegerProperty(required=False)
-    damage_bonus = db.IntegerProperty(required=False)
+    attack_mod = db.IntegerProperty(required=False)
+    damage_mod = db.IntegerProperty(required=False)
     critical_damage_die = db.IntegerProperty(required=False)
     critical_damage_dice = db.IntegerProperty(required=False)    
-    defense_type_bonus = db.StringProperty(required=False)
-    defense_bonus = db.IntegerProperty(required=False)
+    defense_mod_type = db.StringProperty(required=False)
+    defense_mod = db.IntegerProperty(required=False)
     implement = db.BooleanProperty(required=True, default=False)  
     
 class Armor(Item):
     bonus = db.IntegerProperty(required=True) # Modifier to armor
     check = db.IntegerProperty(required=True) # Modifier to skill checks
     speed = db.IntegerProperty(required=True) # Modifier to speed
-    defense_type_bonus = db.StringProperty(required=False)
-    defense_bonus = db.IntegerProperty(required=False)    
+    defense_mod_type = db.StringProperty(required=False)
+    defense_mod = db.IntegerProperty(required=False)    
 
 class Potion(Item):
     foo = db.StringProperty(required=False)     
