@@ -31,8 +31,26 @@ def getJSONParty(party):
     '''
     _trace = TRACE+'getJSONParty() '
     logging.info(_trace) 
+    logging.info(_trace + 'player = ' + str(party.key()))
+    json = {'key': str(party.key()), 'location': str(party.location),
+            'log': party.log}
+
+    if party.class_name() == 'PlayerParty':
+        json['leader'] = str(party.leader.key())
+        members = []
+        for m in party.members:
+            members.append(str(m))
+        json['members'] = str(members)
+
+    if party.class_name() == 'NonPlayerParty':
+        if party.owner:
+            json['owner'] = str(party.owner.nickname())
+        monsters = []    
+        for m in party.monsters:
+            monsters.append(str(m))
+        json['monsters'] = str(monsters)      
        
-    return
+    return json
     
 def updateJSONParty(party, *characters):
     '''Updates a Party with one or more Characters, and Returns a JSON 

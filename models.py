@@ -235,26 +235,37 @@ class Item(polymodel.PolyModel):
     created = db.DateTimeProperty(auto_now_add=True)
     updated = db.DateTimeProperty(auto_now=True)    
     name = db.StringProperty(required=True)
-    level = db.IntegerProperty(required=True, default=1) # Level requirement
+    # Level requirement
+    level = db.IntegerProperty(required=True, default=1) 
     description = db.TextProperty(required=False)
-    slot = db.StringProperty(required=False) # Body slot this item occupies
+    # Body slot this item occupies
+    slot = db.StringProperty(required=False)
     price = db.IntegerProperty(required=True)
     weight = db.IntegerProperty(required=True, default=0)
-    magic = db.BooleanProperty(required=True, default=False)    
-    casts = db.StringListProperty(required=True, default=None) # Allowed Casts  
-    power = db.ReferenceProperty(required=False) # Inherent Power
+    magic = db.BooleanProperty(required=True, default=False)   
+    # Allowed Casts  
+    casts = db.StringListProperty(required=True, default=None)
+    # Inherent Power  
+    power = db.ReferenceProperty(required=False) 
     category = db.StringProperty(required=False)
     ability_mod_type = db.StringProperty(required=False)
     ability_mod = db.IntegerProperty(required=False)    
     json = JSONProperty(required=True)
     
 class Weapon(Item):
-    damage_die = db.IntegerProperty(required=True) # Type of die to roll
-    damage_dice = db.IntegerProperty(required=True) # Number of dice to roll
-    group = db.StringProperty(required=True)
-    attributes = db.StringListProperty(required=True)
-    damage_keywords = db.StringListProperty(required=True, default=None)    
-    ranges = db.IntegerProperty(required=True, default=0)
+    # Type of die to roll
+    damage_die = db.IntegerProperty(required=True) 
+    # Number of dice to roll
+    damage_dice = db.IntegerProperty(required=True) 
+    # Category: Mace, Spear, Hammer ...
+    group = db.StringProperty(required=True) 
+    # Properties: Off-hand, Versatile ...
+    attributes = db.StringListProperty(required=True) 
+    # Fire, Frost ...   
+    damage_keywords = db.StringListProperty(required=True, default=None)
+    # 4 bit 0111 representing wich four ranges weapon can use  
+    ranges = db.IntegerProperty(required=True, default=0) 
+    # Bonus for Race/Cast with proficiency
     proficiency = db.IntegerProperty(required=True, default=0)
     attack_mod = db.IntegerProperty(required=False)
     damage_mod = db.IntegerProperty(required=False)

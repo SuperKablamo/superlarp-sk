@@ -30,7 +30,7 @@ from google.appengine.ext.webapp.util import run_wsgi_app
 from google.appengine.ext import db
 from google.appengine.api import urlfetch
 
-import oauth2 as oauth
+#import oauth2 as oauth
 
 SETTINGS = {'APP': 'superlarp-sk',
             'CONSUMER_KEY': 'superlarp-sk.appspot.com',

@@ -44,6 +44,13 @@ def getJSONPlayer(player):
             'purse': player.purse, 'resist': player.resist,
             'vulnerable': player.vulnerable, 'key': str(player.key())}
 
+    if nonplayer.class_name() == 'PlayerCharacterTemplate':
+        json['template_id'] = nonplayer.template_id
+
+    if nonplayer.class_name() == 'Player':
+        if player.user:
+           json['user'] = player.user.nickname()
+    
     logging.info(_trace + 'json = ' + str(json))            
     # Construct JSON for Player Powers
     powers = db.get(player.powers)
@@ -106,20 +113,30 @@ def getJSONPlayer(player):
     return json
 
 def getJSONNonPlayer(nonplayer):
+    '''Returns a Monster or PlayerCharacterTemplate as JSON.
+    '''    
     json = {'name': nonplayer.name, 'level': nonplayer.level, 
             'race': nonplayer.race, 'alignment': nonplayer.alignment, 
             'size': nonplayer.size, 'experience': nonplayer.experience, 
             'speed': nonplayer.speed, 'hit_points': nonplayer.hit_points, 
             'scores': nonplayer.scores, 'description': nonplayer.description,
             'origin': nonplayer.origin, 'category': nonplayer.category,
-            'actions': nonplayer.actions, 'unique': nonplayer.unique,
-            'role': nonplayer.role, 'challenge': nonplayer.challenge,
-            'keywords': nonplayer.keywords, 'artifacts': nonplayer.artifacts,
-            'languages': nonplayer.languages, 
-            'resist': nonplayer.resist,
+            'actions': nonplayer.actions, 'role': nonplayer.role, 
+            'challenge': nonplayer.challenge, 'keywords': nonplayer.keywords,
+            'artifacts': nonplayer.artifacts,
+            'languages': nonplayer.languages, 'resist': nonplayer.resist,
             'vulnerable': nonplayer.vulnerable,
-            'created': str(nonplayer.created),
+            'created': str(nonplayer.created), 
             'id': str(nonplayer.key().id())}
+    
+    if nonplayer.class_name == 'Monster':
+        if nonplayer.user:
+            json['user'] = nonplayer.user.nickname()
+    
+    if nonplayer.class_name == 'NonPlayerCharacterTemplate':
+        json['template_id'] = nonplayer.template_id
+        json['unique'] = nonplayer.unique
+        json['active'] = nonplayer.active
     
     # Construct JSON for NonPlayer Items
     items = db.get(nonplayer.items)

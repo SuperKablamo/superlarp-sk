@@ -47,7 +47,18 @@ def attackMonster(attacker, attack, monster):
     attack_roll = utils.roll(20, 1)    
     
     if attack.class_name() == 'Weapon':
+        # get attack mod using proficiency and ability
+        # if magic, add bonus
+        # get defense value
+        # compare values
+        # hit?
+        # assign damage
+        # if magic, check for keywords
+        
         logging.info(_trace+'Attack = Item.Weapon')
+        if attack.magic == True: pass
+        else: pass
+                
         mod_attack_roll = attack_roll + attack.attack_mod
         logging.info(_trace+'attack_roll = '+str(attack_roll))
         logging.info(_trace+'mod_attack_roll = '+str(mod_attack_roll))
@@ -109,7 +120,21 @@ def attackMonster(attacker, attack, monster):
                 
     elif attack.class_name() == 'Attack':    
         logging.info(_trace+'Attack = Power.Attack')
-
+        # get attack ability mod
+        # get attack mod
+        # get defense value
+        # compare values
+        # hit?
+        # assign damage
+        # Weapon damage?
+        # -- get weapon
+        # dice damage?
+        # -- roll damage
+        # Ability bonus to damage?
+        # -- add to damage
+        # damange keywords?
+        # -- add/subtract
+        
         mod_attack_roll = attack_roll + attack.attack_mod
         logging.info(_trace+'attack_roll = '+str(attack_roll))
         logging.info(_trace+'mod_attack_roll = '+str(mod_attack_roll))
